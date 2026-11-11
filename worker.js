@@ -1,8 +1,6 @@
-// worker.js — ifield P2P Chat signaling relay
-// Приватность: храним только SDP на 5 минут. Без логов, без IP, без аккаунтов.
-
-const TTL = 300;         // 5 минут — жизнь комнаты в KV
-const MAX_SIZE = 8000;   // макс размер SDP (защита от спама)
+// worker.js — ifield P2P Chat Backend
+const TTL = 300; 
+const MAX_SIZE = 8000;
 
 export default {
   async fetch(request, env) {
@@ -14,60 +12,90 @@ export default {
       'Cache-Control': 'no-store',
     };
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: cors });
+    if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
+
+    // ========================================================
+    // 🛡️ НЕВИДИМЫЙ ОХРАННИК (Защита исходников)
+    // Если кто-то запрашивает код сервера, мы говорим "Не найдено"
+    // ========================================================
+    const forbiddenPaths = ['/worker.js', '/wrangler.toml', '/.git', '/package.json', '/package-lock.json'];
+    if (forbiddenPaths.includes(url.pathname) || url.pathname.startsWith('/.git/')) {
+      return new Response('Not Found', { status: 404 });
     }
 
     try {
-      // Всё, что не /api/* — отдаём как статику (index.html и т.п.)
-      if (!url.pathname.startsWith('/api/')) {
-        return env.ASSETS.fetch(request);
+      // --- ВЕБХУК TELEGRAM (ДОНАТЫ) ---
+      if (url.pathname === '/webhook' && request.method === 'POST') {
+        return handleTelegramWebhook(request, env);
       }
 
-      // POST /api/room/new — создать комнату, получить код
-      if (url.pathname === '/api/room/new' && request.method === 'POST') {
-        for (let i = 0; i < 5; i++) {
-          const code = generateCode();
-          const exists = await env.IFIELD_CRYPTO_KV.get(`room:${code}:offer`);
-          if (!exists) return json({ code }, 200, cors);
-        }
-        return json({ error: 'busy' }, 503, cors);
+      // --- API ДЛЯ ДОНАТОВ ---
+      if (url.pathname === '/api/donate/link' && request.method === 'POST') {
+        const body = await request.json();
+        const amount = body.amount || 50;
+        const token = env.BOT_TOKEN; 
+        
+        if (!token) return json({ error: 'Bot token not configured' }, 500, cors);
+
+        const res = await fetch(`https://api.telegram.org/bot${token}/createInvoiceLink`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: 'Поддержка iField',
+            description: 'Добровольный донат на развитие приватного P2P чата',
+            payload: `donate_${Date.now()}`,
+            currency: 'XTR',
+            prices: [{ label: 'Донат', amount: amount }],
+            provider_token: '' 
+          })
+        });
+        const data = await res.json();
+        if (data.ok) return json({ link: data.result }, 200, cors);
+        return json({ error: data.description }, 500, cors);
       }
 
-      // GET|POST|PUT /api/room/:code/offer или /answer
-      const m = url.pathname.match(/^\/api\/room\/([a-z0-9]{6})\/(offer|answer)$/);
-      if (m) {
-        const [, code, type] = m;
-        const key = `room:${code}:${type}`;
-
-        if (request.method === 'GET') {
-          const val = await env.IFIELD_CRYPTO_KV.get(key);
-          if (!val) return json({ error: 'not_found' }, 404, cors);
-          return json({ data: val }, 200, cors);
-        }
-
-        if (request.method === 'POST' || request.method === 'PUT') {
-          const body = await request.text();
-          if (body.length === 0 || body.length > MAX_SIZE) {
-            return json({ error: 'bad_size' }, 413, cors);
+      // --- API ДЛЯ ЧАТА (СИГНАЛИНГ) ---
+      if (url.pathname.startsWith('/api/')) {
+        if (url.pathname === '/api/room/new' && request.method === 'POST') {
+          for (let i = 0; i < 5; i++) {
+            const code = generateCode();
+            const exists = await env.IFIELD_CRYPTO_KV.get(`room:${code}:offer`);
+            if (!exists) return json({ code }, 200, cors);
           }
-          await env.IFIELD_CRYPTO_KV.put(key, body, { expirationTtl: TTL });
+          return json({ error: 'busy' }, 503, cors);
+        }
+
+        const m = url.pathname.match(/^\/api\/room\/([a-z0-9]{6})\/(offer|answer)$/);
+        if (m) {
+          const [, code, type] = m;
+          const key = `room:${code}:${type}`;
+          if (request.method === 'GET') {
+            const val = await env.IFIELD_CRYPTO_KV.get(key);
+            if (!val) return json({ error: 'not_found' }, 404, cors);
+            return json({ data: val }, 200, cors);
+          }
+          if (request.method === 'POST' || request.method === 'PUT') {
+            const body = await request.text();
+            if (body.length === 0 || body.length > MAX_SIZE) return json({ error: 'bad_size' }, 413, cors);
+            await env.IFIELD_CRYPTO_KV.put(key, body, { expirationTtl: TTL });
+            return json({ ok: true }, 200, cors);
+          }
+        }
+
+        const cm = url.pathname.match(/^\/api\/room\/([a-z0-9]{6})\/cleanup$/);
+        if (cm && request.method === 'POST') {
+          const code = cm[1];
+          await Promise.all([
+            env.IFIELD_CRYPTO_KV.delete(`room:${code}:offer`),
+            env.IFIELD_CRYPTO_KV.delete(`room:${code}:answer`),
+          ]);
           return json({ ok: true }, 200, cors);
         }
       }
 
-      // POST /api/room/:code/cleanup — стереть комнату после соединения
-      const cm = url.pathname.match(/^\/api\/room\/([a-z0-9]{6})\/cleanup$/);
-      if (cm && request.method === 'POST') {
-        const code = cm[1];
-        await Promise.all([
-          env.IFIELD_CRYPTO_KV.delete(`room:${code}:offer`),
-          env.IFIELD_CRYPTO_KV.delete(`room:${code}:answer`),
-        ]);
-        return json({ ok: true }, 200, cors);
-      }
-
-      return json({ error: 'not_found' }, 404, cors);
+      // --- ВСЁ ОСТАЛЬНОЕ ОТДАЕМ КАК СТАТИКУ (index.html) ---
+      return env.ASSETS.fetch(request);
+      
     } catch (e) {
       return json({ error: 'server_error' }, 500, cors);
     }
@@ -75,17 +103,39 @@ export default {
 };
 
 function json(data, status, cors) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...cors },
-  });
+  return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...cors } });
 }
 
-// Без похожих символов (нет 0/O, 1/l/i) — чтобы код было легко диктовать
 function generateCode() {
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
   const bytes = crypto.getRandomValues(new Uint8Array(6));
   let code = '';
   for (let i = 0; i < 6; i++) code += chars[bytes[i] % chars.length];
   return code;
+}
+
+// Логика бота
+async function handleTelegramWebhook(request, env) {
+  const update = await request.json();
+  const token = env.BOT_TOKEN;
+  if (!token) return new Response('No token', { status: 500 });
+
+  const callTg = (method, body) => fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+
+  if (update.pre_checkout_query) {
+    await callTg('answerPreCheckoutQuery', { pre_checkout_query_id: update.pre_checkout_query.id, ok: true });
+  }
+
+  if (update.message && update.message.successful_payment) {
+    const pay = update.message.successful_payment;
+    await env.IFIELD_CRYPTO_KV.put(`donate:${pay.telegram_payment_charge_id}`, pay.total_amount);
+    await callTg('sendMessage', {
+      chat_id: update.message.chat.id,
+      text: `💎 Огромное спасибо за поддержку! Вы пожертвовали ${pay.total_amount} ⭐. Это помогает проекту расти!`
+    });
+  }
+
+  return new Response('OK', { status: 200 });
 }
