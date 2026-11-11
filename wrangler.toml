@@ -7,5 +7,5 @@ directory = "./public"
 binding = "ASSETS"
 
 [[kv_namespaces]]
-binding = "p2p_DB"
-id = "СЮДА_ВСТАВЬ_ID_ИЗ_ШАГА_1"
+binding = "IFIELD_CRYPTO_KV"
+id = "fd9c775bf6cb40fb99480edf49529f04"
