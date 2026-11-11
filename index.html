@@ -7,549 +7,464 @@
 <title>iField — Приватный P2P чат</title>
 <style>
 /* ============================================================
-   СЕКЦИЯ 1 — СТИЛИ
+   СЕКЦИЯ 1 — СТИЛИ (Cyberpunk / Glassmorphism)
    ============================================================ */
 :root {
-  --green: #0f0;
-  --green-dim: #0a0;
-  --bg: #000;
-  --panel: rgba(0, 20, 0, 0.82);
-  --border: rgba(0, 255, 0, 0.25);
-  --danger: #f33;
-  --warn: #fa0;
+  --green: #00ff41;
+  --green-dim: #008f11;
+  --bg: #050505;
+  --panel: rgba(5, 15, 5, 0.85);
+  --border: rgba(0, 255, 65, 0.3);
+  --danger: #ff3333;
+  --warn: #ffaa00;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
 html, body {
-  margin: 0; padding: 0;
-  height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  color: var(--green);
+  margin: 0; padding: 0; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--green);
   font-family: -apple-system, BlinkMacSystemFont, "SF Mono", monospace;
-  font-size: 15px;
-  -webkit-font-smoothing: antialiased;
-  overscroll-behavior: none;
-  user-select: none;
-  -webkit-user-select: none;
+  font-size: 15px; -webkit-font-smoothing: antialiased;
+  user-select: none; -webkit-user-select: none;
 }
+input, textarea, .selectable { user-select: text !important; -webkit-user-select: text !important; }
 
-input, textarea, .selectable {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-}
-
-#matrixCanvas {
-  position: fixed; top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 0;
-  opacity: 0.35;
-  pointer-events: none;
-}
+#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.15; pointer-events: none; }
 
 /* ---------- Экраны ---------- */
 .screen {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  display: none;
-  flex-direction: column;
+  position: fixed; inset: 0; display: none; flex-direction: column;
   padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 16px);
-  z-index: 10;
+  z-index: 10; transition: opacity 0.3s;
 }
 .screen.active { display: flex; }
 
-/* ---------- Экран приветствия ---------- */
-#screen-start {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-.logo {
-  font-size: 64px;
-  margin-bottom: 8px;
-  filter: drop-shadow(0 0 20px var(--green));
-  animation: pulse 2.5s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.05); }
-}
-.title {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  margin-bottom: 4px;
-  text-shadow: 0 0 20px var(--green);
-}
-.subtitle {
-  font-size: 12px;
-  opacity: 0.6;
-  margin-bottom: 32px;
-  letter-spacing: 1px;
-}
-.big-btn {
-  display: block;
-  width: 100%;
-  max-width: 340px;
-  padding: 16px 24px;
-  margin: 8px 0;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel);
-  color: var(--green);
-  font-size: 16px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.5px;
-}
-.big-btn:active {
-  background: rgba(0, 255, 0, 0.15);
-  transform: scale(0.98);
-}
-.big-btn.primary {
-  background: rgba(0, 255, 0, 0.15);
-  border-color: var(--green);
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-}
-.big-btn .sub {
-  display: block;
-  font-size: 11px;
-  opacity: 0.6;
-  font-weight: 400;
-  margin-top: 3px;
-}
-.privacy-note {
-  position: absolute;
-  bottom: calc(var(--safe-bottom) + 20px);
-  left: 16px; right: 16px;
-  font-size: 10px;
-  opacity: 0.4;
-  text-align: center;
-  line-height: 1.5;
-  letter-spacing: 0.3px;
-}
+/* ---------- Главный экран ---------- */
+#screen-start { align-items: center; justify-content: center; text-align: center; }
+.logo { font-size: 72px; margin-bottom: 8px; filter: drop-shadow(0 0 20px var(--green)); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
+.title { font-size: 32px; font-weight: 800; letter-spacing: 4px; text-shadow: 0 0 15px var(--green); margin-bottom: 4px; }
+.subtitle { font-size: 11px; opacity: 0.6; letter-spacing: 2px; margin-bottom: 32px; }
 
-/* ---------- Экран хоста ---------- */
-#screen-host { align-items: stretch; }
-.section-title {
-  font-size: 12px; opacity: 0.6; letter-spacing: 2px;
-  margin: 16px 0 8px; text-transform: uppercase;
+.big-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; max-width: 320px; padding: 16px; margin: 8px 0;
+  border: 1px solid var(--border); border-radius: 14px;
+  background: var(--panel); color: var(--green);
+  font-size: 16px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.2s; backdrop-filter: blur(10px);
 }
+.big-btn:active { background: rgba(0, 255, 65, 0.15); transform: scale(0.97); box-shadow: 0 0 20px rgba(0,255,65,0.3); }
+.big-btn.primary { border-color: var(--green); box-shadow: inset 0 0 15px rgba(0,255,65,0.1); }
+.big-btn .sub { font-size: 11px; opacity: 0.6; font-weight: 400; margin-top: 4px; }
+.btn-row { display: flex; gap: 8px; width: 100%; max-width: 320px; }
+.btn-row .big-btn { margin: 8px 0; padding: 12px; font-size: 14px; }
+
+/* ---------- Экран хоста/гостя ---------- */
+.section-title { font-size: 11px; opacity: 0.6; letter-spacing: 1px; margin: 16px 0 6px; text-transform: uppercase; }
 .code-box {
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 12px; padding: 16px; margin-bottom: 12px;
-  font-family: "SF Mono", monospace; font-size: 22px; font-weight: 700;
-  letter-spacing: 3px; text-align: center; color: var(--green);
-  text-shadow: 0 0 10px var(--green); word-break: break-all;
-  user-select: all; -webkit-user-select: all;
+  font-size: 24px; font-weight: 700; letter-spacing: 3px;
+  text-align: center; color: var(--green); text-shadow: 0 0 10px var(--green);
+  user-select: all; -webkit-user-select: all; backdrop-filter: blur(10px);
 }
-.code-box.secret {
-  font-size: 14px; letter-spacing: 1px;
-  color: var(--warn); text-shadow: 0 0 10px var(--warn);
-}
-.row-btns { display: flex; gap: 8px; margin-bottom: 12px; }
-.row-btns .big-btn { flex: 1; margin: 0; padding: 12px; font-size: 13px; }
-.status-line {
-  text-align: center; font-size: 13px; padding: 12px;
-  border-radius: 10px; background: rgba(0, 30, 0, 0.6);
-  border: 1px solid var(--border); margin-top: 12px;
-}
-.status-line.waiting::after {
-  content: ''; display: inline-block;
-  animation: dots 1.5s steps(4, end) infinite;
-}
-@keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
-.spinner {
-  display: inline-block; width: 12px; height: 12px;
-  border: 2px solid var(--green-dim); border-top-color: var(--green);
-  border-radius: 50%; animation: spin 0.8s linear infinite;
-  margin-right: 8px; vertical-align: middle;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ---------- Экран гостя ---------- */
-#screen-guest { align-items: stretch; }
+.code-box.secret { font-size: 14px; letter-spacing: 1px; color: var(--warn); text-shadow: 0 0 10px var(--warn); }
 .input-field {
-  width: 100%; padding: 14px 16px; background: var(--panel);
+  width: 100%; padding: 16px; background: var(--panel);
   border: 1px solid var(--border); border-radius: 12px;
-  color: var(--green); font-family: "SF Mono", monospace;
-  font-size: 16px; letter-spacing: 2px; margin-bottom: 12px;
-  outline: none; text-align: center;
+  color: var(--green); font-family: inherit; font-size: 16px;
+  margin-bottom: 12px; outline: none; text-align: center;
+  backdrop-filter: blur(10px); transition: border 0.2s;
 }
-.input-field:focus { border-color: var(--green); box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); }
-.input-field::placeholder { color: rgba(0, 255, 0, 0.3); letter-spacing: 1px; }
+.input-field:focus { border-color: var(--green); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
 
-/* ---------- Экран чата ---------- */
-#screen-chat { padding: 0; display: none; flex-direction: column; }
-#screen-chat.active { display: flex; }
+/* ---------- Чат ---------- */
+#screen-chat { padding: 0; }
 .chat-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: calc(var(--safe-top) + 10px) 16px 10px;
+  padding: calc(var(--safe-top) + 12px) 16px 12px;
   background: var(--panel); border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
+  backdrop-filter: blur(15px); z-index: 10;
 }
-.chat-header .title-small { font-size: 13px; font-weight: 600; letter-spacing: 1px; }
-.chat-header .status { font-size: 11px; opacity: 0.7; display: flex; align-items: center; gap: 6px; }
-.dot-online { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s ease-in-out infinite; }
+.chat-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.status { font-size: 10px; display: flex; align-items: center; gap: 6px; opacity: 0.8; }
+.dot-online { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 .dot-offline { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-.header-btn { background: transparent; border: 1px solid var(--border); color: var(--green); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; cursor: pointer; }
-.header-btn:active { background: rgba(0, 255, 0, 0.15); }
-.messages {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 12px 12px 4px; -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth; user-select: text; -webkit-user-select: text;
-}
+.header-btn { background: transparent; border: none; color: var(--green); font-size: 20px; padding: 4px; }
+.messages { flex: 1; overflow-y: auto; padding: 16px; scroll-behavior: smooth; }
 .msg {
-  max-width: 82%; margin-bottom: 8px; padding: 10px 14px;
-  border-radius: 16px; font-size: 15px; line-height: 1.35;
-  word-wrap: break-word; word-break: break-word;
-  animation: msgIn 0.2s ease-out; user-select: text; -webkit-user-select: text;
+  max-width: 85%; margin-bottom: 10px; padding: 12px 16px;
+  border-radius: 16px; font-size: 15px; line-height: 1.4;
+  animation: msgIn 0.2s ease-out; backdrop-filter: blur(5px);
 }
-@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.msg.me { margin-left: auto; background: rgba(0, 255, 0, 0.18); border: 1px solid rgba(0, 255, 0, 0.3); border-bottom-right-radius: 4px; }
-.msg.partner { margin-right: auto; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-bottom-left-radius: 4px; color: #d0ffd0; }
-.msg.system { margin: 12px auto; text-align: center; max-width: 90%; background: transparent; color: var(--warn); font-size: 11px; opacity: 0.8; letter-spacing: 0.5px; padding: 4px 8px; }
-.msg .meta { display: block; font-size: 9px; opacity: 0.5; margin-top: 4px; letter-spacing: 0.5px; }
-.typing { font-size: 11px; opacity: 0.6; padding: 4px 16px; height: 20px; font-style: italic; }
-.input-bar { display: flex; gap: 8px; padding: 10px 12px calc(var(--safe-bottom) + 10px); background: var(--panel); border-top: 1px solid var(--border); flex-shrink: 0; }
-.input-bar input { flex: 1; padding: 12px 14px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--border); border-radius: 12px; color: var(--green); font-family: inherit; font-size: 15px; outline: none; }
-.input-bar input:focus { border-color: var(--green); box-shadow: 0 0 12px rgba(0, 255, 0, 0.2); }
-.input-bar input::placeholder { color: rgba(0, 255, 0, 0.3); }
-.send-btn { padding: 12px 18px; background: rgba(0, 255, 0, 0.2); border: 1px solid var(--green); border-radius: 12px; color: var(--green); font-family: inherit; font-size: 20px; cursor: pointer; min-width: 56px; }
-.send-btn:active { background: rgba(0, 255, 0, 0.4); }
-.send-btn:disabled { opacity: 0.4; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.msg.me { margin-left: auto; background: rgba(0, 255, 65, 0.15); border: 1px solid rgba(0, 255, 65, 0.3); border-bottom-right-radius: 4px; }
+.msg.partner { margin-right: auto; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-bottom-left-radius: 4px; color: #e0ffe0; }
+.msg.system { margin: 16px auto; text-align: center; font-size: 11px; color: var(--warn); background: transparent; opacity: 0.8; }
+.msg .meta { display: block; font-size: 9px; opacity: 0.5; margin-top: 6px; }
+.typing { font-size: 11px; opacity: 0.6; padding: 0 16px 4px; height: 18px; font-style: italic; }
+.input-bar { display: flex; gap: 8px; padding: 12px 16px calc(var(--safe-bottom) + 12px); background: var(--panel); border-top: 1px solid var(--border); backdrop-filter: blur(15px); }
+.input-bar input { flex: 1; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 20px; color: var(--green); font-size: 15px; outline: none; }
+.send-btn { padding: 0 20px; background: var(--green); border: none; border-radius: 20px; color: #000; font-size: 18px; font-weight: bold; }
 
-/* ---------- Экран ошибки ---------- */
-#screen-error { align-items: center; justify-content: center; text-align: center; }
-.err-icon { font-size: 64px; margin-bottom: 16px; filter: drop-shadow(0 0 15px var(--danger)); }
-.err-msg { font-size: 15px; opacity: 0.85; max-width: 340px; line-height: 1.5; margin-bottom: 24px; }
+/* ---------- Статус-бар (Миллисекунды) ---------- */
+.status-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.95); border-top: 1px solid var(--border);
+  padding: 4px 8px calc(var(--safe-bottom) + 4px);
+  font-size: 9px; color: var(--green); opacity: 0.7;
+  display: flex; justify-content: space-between; z-index: 20;
+  font-family: "SF Mono", monospace; pointer-events: none;
+}
 
-/* ---------- Статус-бар ---------- */
-.status-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.9); border-top: 1px solid var(--border); padding: 4px 10px calc(var(--safe-bottom) + 4px); font-size: 10px; opacity: 0.55; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; z-index: 20; font-family: "SF Mono", monospace; pointer-events: none; }
-.status-bar span { white-space: nowrap; }
-
-/* ---------- Тост ---------- */
-.toast { position: fixed; top: calc(var(--safe-top) + 16px); left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(0, 30, 0, 0.95); border: 1px solid var(--green); color: var(--green); padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 100; transition: transform 0.3s ease; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); pointer-events: none; max-width: 90vw; text-align: center; }
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255, 50, 50, 0.3); }
-
-/* ---------- Модалка ---------- */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+/* ---------- Модалки и Утилиты ---------- */
+.toast { position: fixed; top: calc(var(--safe-top) + 16px); left: 50%; transform: translate(-50%, -100px); background: rgba(0, 30, 0, 0.95); border: 1px solid var(--green); color: var(--green); padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 100; transition: all 0.3s; box-shadow: 0 0 20px rgba(0,255,65,0.3); }
+.toast.show { transform: translate(-50%, 0); }
+.toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 20px rgba(255,50,50,0.3); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; backdrop-filter: blur(5px); }
 .modal-overlay.active { display: flex; }
-.modal { background: #001500; border: 1px solid var(--green); border-radius: 16px; padding: 24px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 0 60px rgba(0, 255, 0, 0.2); }
-.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
-.modal-text { font-size: 13px; opacity: 0.75; line-height: 1.5; margin-bottom: 20px; }
+.modal { background: #0a0a0a; border: 1px solid var(--green); border-radius: 16px; padding: 24px; max-width: 340px; width: 100%; box-shadow: 0 0 40px rgba(0,255,65,0.2); }
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; text-shadow: 0 0 10px var(--green); }
+.modal-text { font-size: 13px; opacity: 0.8; line-height: 1.5; margin-bottom: 20px; }
 .modal-btns { display: flex; gap: 8px; }
 .modal-btns .big-btn { margin: 0; padding: 12px; font-size: 14px; }
 
-/* ---------- Диагностика (Логи на экране) ---------- */
-#debug-log { position: fixed; bottom: calc(var(--safe-bottom) + 30px); left: 10px; right: 10px; max-height: 150px; overflow-y: auto; background: rgba(20, 0, 0, 0.95); border: 1px solid var(--danger); border-radius: 8px; padding: 8px; font-size: 11px; color: #faa; font-family: monospace; z-index: 999; display: none; white-space: pre-wrap; pointer-events: auto; }
+#debug-log { position: fixed; bottom: 30px; left: 10px; right: 10px; max-height: 150px; overflow-y: auto; background: rgba(20,0,0,0.95); border: 1px solid var(--danger); border-radius: 8px; padding: 8px; font-size: 10px; color: #faa; display: none; z-index: 999; }
 #debug-log.active { display: block; }
-#debug-toggle { position: fixed; top: calc(var(--safe-top) + 10px); right: 10px; background: rgba(255, 0, 0, 0.2); color: var(--danger); border: 1px solid var(--danger); border-radius: 50%; width: 30px; height: 30px; font-size: 16px; z-index: 1000; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.6; }
-.hidden { display: none !important; }
+#debug-toggle { position: fixed; top: calc(var(--safe-top) + 10px); right: 10px; width: 24px; height: 24px; background: rgba(255,0,0,0.1); border-radius: 50%; z-index: 1000; opacity: 0.3; }
 </style>
 </head>
 <body>
 
 <canvas id="matrixCanvas"></canvas>
 
-<!-- ЭКРАН 1: Старт -->
+<!-- ГЛАВНЫЙ ЭКРАН -->
 <div id="screen-start" class="screen active">
   <div class="logo">🔐</div>
   <div class="title">iField</div>
-  <div class="subtitle">P2P · E2E · БЕЗ СЕРВЕРОВ</div>
-  <button id="btn-create" class="big-btn primary">🆕 Создать комнату<span class="sub">Получишь код и ключ для друга</span></button>
-  <button id="btn-join" class="big-btn">🔑 Войти по коду<span class="sub">Есть код и ключ от друга?</span></button>
-  <div class="privacy-note">Никаких аккаунтов. Никаких логов. Никакой истории.<br>Всё живёт только в этой вкладке — закрыл, значит стёр.</div>
+  <div class="subtitle">P2P · E2E · PRIVACY FIRST</div>
+
+  <button id="btn-create" class="big-btn primary">🆕 Создать комнату<span class="sub">Сгенерировать код и ключ</span></button>
+  <button id="btn-join" class="big-btn">🔑 Войти по коду<span class="sub">Подключиться к другу</span></button>
+  
+  <div class="btn-row">
+    <button id="btn-donate" class="big-btn" style="border-color: var(--warn); color: var(--warn);">💎 Донат<span class="sub">Stars</span></button>
+    <button id="btn-info" class="big-btn">📖 Инструкция<span class="sub">Как это работает</span></button>
+  </div>
 </div>
 
-<!-- ЭКРАН 2: Хост -->
+<!-- ЭКРАН ХОСТА -->
 <div id="screen-host" class="screen">
-  <div class="section-title">📋 Передай другу</div>
-  <div class="code-box" id="host-code" title="Код комнаты">...</div>
-  <div class="section-title">🔐 Секретный ключ (для шифрования)</div>
-  <div class="code-box secret" id="host-secret" title="Секретный ключ">...</div>
-  <div class="row-btns">
+  <div class="section-title">📋 Код комнаты</div>
+  <div class="code-box" id="host-code">...</div>
+  <div class="section-title">🔐 Ключ шифрования</div>
+  <div class="code-box secret" id="host-secret">...</div>
+  <div class="btn-row">
     <button class="big-btn" id="btn-share">📤 Поделиться</button>
     <button class="big-btn" id="btn-copy">📋 Копировать</button>
   </div>
-  <div class="status-line waiting" id="host-status"><span class="spinner"></span>Ожидание гостя</div>
+  <div style="text-align:center; font-size:12px; margin-top:20px; opacity:0.7;"><span class="spinner"></span> Ожидание гостя...</div>
   <div style="flex:1"></div>
   <button class="big-btn" id="btn-host-cancel">← Отмена</button>
 </div>
 
-<!-- ЭКРАН 3: Гость -->
+<!-- ЭКРАН ГОСТЯ -->
 <div id="screen-guest" class="screen">
   <div class="section-title">🔑 Код комнаты</div>
-  <input type="text" id="guest-code" class="input-field" placeholder="6 символов" maxlength="6" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false">
+  <input type="text" id="guest-code" class="input-field" placeholder="6 символов" maxlength="6" autocapitalize="none" style="font-size:22px; letter-spacing:4px;">
   <div class="section-title">🔐 Секретный ключ</div>
-  <input type="text" id="guest-secret" class="input-field" placeholder="вставь ключ" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="letter-spacing:1px;font-size:14px;">
+  <input type="text" id="guest-secret" class="input-field" placeholder="Вставь ключ друга" autocapitalize="none" style="font-size:13px;">
   <button class="big-btn primary" id="btn-guest-connect" style="margin-top:16px;">⚡ Подключиться</button>
   <div style="flex:1"></div>
   <button class="big-btn" id="btn-guest-back">← Назад</button>
 </div>
 
-<!-- ЭКРАН 4: Чат -->
+<!-- ЭКРАН ЧАТА -->
 <div id="screen-chat" class="screen">
   <div class="chat-header">
     <button class="header-btn" id="btn-leave">✕</button>
-    <div class="title-small">🔐 ЗАЩИЩЁННЫЙ КАНАЛ</div>
-    <div class="status"><span class="dot-offline" id="chat-dot"></span><span id="chat-status">соединение...</span></div>
+    <div class="chat-title">🔐 ЗАЩИЩЁННЫЙ КАНАЛ</div>
+    <div class="status"><span class="dot-offline" id="chat-dot"></span><span id="chat-status">...</span></div>
   </div>
   <div class="messages" id="messages"></div>
   <div class="typing" id="typing-indicator"></div>
   <div class="input-bar">
-    <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
+    <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off" enterkeyhint="send">
     <button class="send-btn" id="btn-send">➤</button>
   </div>
 </div>
 
-<!-- ЭКРАН 5: Ошибка -->
-<div id="screen-error" class="screen">
-  <div class="err-icon">⚠️</div>
-  <div class="err-msg" id="err-msg">Что-то пошло не так</div>
-  <button class="big-btn" id="btn-error-back">← На главную</button>
+<!-- ЭКРАН ИНСТРУКЦИИ -->
+<div id="screen-info" class="screen" style="overflow-y:auto; padding-top:60px;">
+  <div class="title" style="font-size:24px; margin-bottom:20px;">📖 Инструкция</div>
+  <div style="font-size:14px; line-height:1.6; opacity:0.8; margin-bottom:16px;">
+    <b>1. Как начать?</b><br>
+    Нажми «Создать комнату». Приложение сгенерирует <b>Код</b> и <b>Ключ</b>.<br><br>
+    <b>2. Как подключиться?</b><br>
+    Отправь другу Код и Ключ. Он должен нажать «Войти по коду» и ввести их.<br><br>
+    <b>3. Приватность</b><br>
+    Сообщения шифруются (AES-256) и идут напрямую между устройствами. Сервер (Cloudflare) видит только технические данные для связи и стирает их через 5 минут. Никаких логов и истории.<br><br>
+    <b>4. Донат</b><br>
+    Вы можете поддержать проект звёздами Telegram. Это добровольно!
+  </div>
+  <button class="big-btn" id="btn-info-back" style="margin-top:20px;">← Назад</button>
 </div>
 
 <div class="toast" id="toast"></div>
-
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <div class="modal-title" id="modal-title">Подтверждение</div>
-    <div class="modal-text" id="modal-text">Вы уверены?</div>
-    <div class="modal-btns">
-      <button class="big-btn" id="modal-no">Отмена</button>
-      <button class="big-btn primary" id="modal-yes">Да</button>
-    </div>
+    <div class="modal-title" id="modal-title">...</div>
+    <div class="modal-text" id="modal-text">...</div>
+    <div class="modal-btns"><button class="big-btn" id="modal-no">Нет</button><button class="big-btn primary" id="modal-yes">Да</button></div>
   </div>
 </div>
 
+<!-- СТАТУС-БАР -->
 <div class="status-bar">
-  <span id="sb-enc">🔐 AES-256-GCM</span>
-  <span id="sb-datach">📡 —</span>
-  <span id="sb-time">--:--:--</span>
+  <span id="sb-enc">🔐 AES-256</span>
+  <span id="sb-datach">📡 ---</span>
+  <span id="sb-mem">💾 --- MB</span>
+  <span id="sb-time">00:00:00.000</span>
 </div>
 
-<!-- Отладка -->
 <div id="debug-toggle">🐞</div>
 <div id="debug-log"></div>
 
 <script>
 /* ============================================================
-   СЕКЦИЯ 3 — КОНФИГ И УТИЛИТЫ (+ ДИАГНОСТИКА)
+   КОНФИГ И УТИЛИТЫ
    ============================================================ */
-const CONFIG = {
-  stunServers: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'],
-  iceTimeout: 8000,
-  answerPollInterval: 1500,
-  answerTimeout: 300000,
-  chunkSize: 0x8000,
-};
-
-const screens = {
-  start: document.getElementById('screen-start'),
-  host: document.getElementById('screen-host'),
-  guest: document.getElementById('screen-guest'),
-  chat: document.getElementById('screen-chat'),
-  error: document.getElementById('screen-error'),
-};
-
-function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
-  if (screens[name]) screens[name].classList.add('active');
-}
-
-// Диагностика
-const debugLogEl = document.getElementById('debug-log');
-const debugToggle = document.getElementById('debug-toggle');
-let debugVisible = false;
-debugToggle.addEventListener('click', () => { debugVisible = !debugVisible; debugLogEl.classList.toggle('active', debugVisible); });
-function logToScreen(msg, isError = false) {
-  const time = new Date().toLocaleTimeString('ru-RU');
-  const color = isError ? '#f33' : '#0f0';
-  debugLogEl.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
-  debugLogEl.scrollTop = debugLogEl.scrollHeight;
-  if (isError && !debugVisible) { debugVisible = true; debugLogEl.classList.add('active'); }
-  console.log(isError ? '❌' : '✅', msg);
-}
-window.onerror = function(msg, url, line, col, error) { logToScreen(`JS CRASH: ${msg} (line ${line})`, true); };
-window.addEventListener('unhandledrejection', function(event) { logToScreen(`UNHANDLED: ${event.reason}`, true); });
-
+const CONFIG = { stunServers: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'], iceTimeout: 8000, answerPollInterval: 1500 };
 const $ = id => document.getElementById(id);
-function base64Encode(bytes) { let bin = ''; const chunk = CONFIG.chunkSize; for (let i = 0; i < bytes.length; i += chunk) { bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk)); } return btoa(bin); }
-function base64Decode(str) { const bin = atob(str); const bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return bytes; }
-function randomBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
-function generateRoomCode() { const chars = 'abcdefghjkmnpqrstuvwxyz23456789'; const b = randomBytes(6); let s = ''; for (let i = 0; i < 6; i++) s += chars[b[i] % chars.length]; return s; }
-function generateSecret() { const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'; const b = randomBytes(32); let s = ''; for (let i = 0; i < 32; i++) s += chars[b[i] % chars.length]; return s; }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const randomBytes = n => crypto.getRandomValues(new Uint8Array(n));
+const base64Encode = (b) => { let bin = ''; for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i+8192)); return btoa(bin); };
+const base64Decode = (s) => { const bin = atob(s); const b = new Uint8Array(bin.length); for(let i=0; i<bin.length; i++) b[i] = bin.charCodeAt(i); return b; };
 
-let toastTimer = null;
-function showToast(text, isError = false) { const el = $('toast'); el.textContent = text; el.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.className = 'toast' + (isError ? ' error' : ''); }, 2500); }
-function confirmModal(title, text) { return new Promise(resolve => { $('modal-title').textContent = title; $('modal-text').textContent = text; $('modal').classList.add('active'); const cleanup = (val) => { $('modal').classList.remove('active'); $('modal-yes').onclick = null; $('modal-no').onclick = null; resolve(val); }; $('modal-yes').onclick = () => cleanup(true); $('modal-no').onclick = () => cleanup(false); }); }
+// Логи
+const dLog = $('debug-log');
+$('debug-toggle').onclick = () => dLog.classList.toggle('active');
+function logToScreen(msg, isErr = false) {
+  dLog.innerHTML += `<div style="color:${isErr?'#f33':'#0f0'}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+  dLog.scrollTop = dLog.scrollHeight;
+  if(isErr) dLog.classList.add('active');
+  console.log(isErr?'❌':'✅', msg);
+}
+window.onerror = (m, u, l) => logToScreen(`JS ERR: ${m} (line ${l})`, true);
+
+// Экраны
+const screens = { start: $('screen-start'), host: $('screen-host'), guest: $('screen-guest'), chat: $('screen-chat'), info: $('screen-info') };
+const showScreen = (name) => { Object.values(screens).forEach(s => s.classList.remove('active')); if(screens[name]) screens[name].classList.add('active'); };
 
 /* ============================================================
-   СЕКЦИЯ 4 — МАТРИЦА
+   ВРЕМЯ ДО МИЛЛИСЕКУНД + СТАТУС БАР
    ============================================================ */
-(function matrixInit() {
-  const canvas = $('matrixCanvas'); const ctx = canvas.getContext('2d', { alpha: true }); let w, h, cols, ypos;
-  function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; cols = Math.floor(w / 22) + 1; ypos = Array(cols).fill(0).map(() => Math.floor(Math.random() * -50)); }
-  resize(); window.addEventListener('resize', resize);
-  const chars = 'アイウエオカキクケコサシスセソタチツテト0123456789'; let running = true;
-  function loop() { if (!running) return; ctx.fillStyle = 'rgba(0, 0, 0, 0.06)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#0f0'; ctx.font = '16px monospace'; for (let i = 0; i < cols; i++) { const ch = chars[Math.floor(Math.random() * chars.length)]; ctx.fillText(ch, i * 22, ypos[i] * 20); if (ypos[i] * 20 > h && Math.random() > 0.97) ypos[i] = 0; ypos[i]++; } }
-  setInterval(loop, 70); document.addEventListener('visibilitychange', () => { running = !document.hidden; });
+function updateClock() {
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
+  $('sb-time').textContent = time;
+  requestAnimationFrame(updateClock);
+}
+requestAnimationFrame(updateClock);
+
+function updateStatusBar() {
+  $('sb-enc').textContent = Crypto ? '🔐 AES-256-GCM' : '🔓 NO ENC';
+  $('sb-datach').textContent = '📡 ' + (dataChannel ? dataChannel.readyState : '---');
+  $('sb-mem').textContent = '💾 ' + (performance.memory ? (performance.memory.usedJSHeapSize/1048576).toFixed(1) : '---') + ' MB';
+}
+setInterval(updateStatusBar, 2000);
+
+/* ============================================================
+   МАТРИЦА
+   ============================================================ */
+(function() {
+  const c = $('matrixCanvas'), ctx = c.getContext('2d');
+  let w, h, cols, ypos;
+  const chars = 'アイウエオカキクケコサシスセソタチツテト0123456789';
+  function resize() { w = c.width = innerWidth; h = c.height = innerHeight; cols = Math.floor(w/22)+1; ypos = Array(cols).fill(0).map(()=>Math.random()*-50); }
+  resize(); addEventListener('resize', resize);
+  function loop() {
+    ctx.fillStyle = 'rgba(5,5,5,0.05)'; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = '#0f0'; ctx.font = '15px monospace';
+    for(let i=0; i<cols; i++) {
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*22, ypos[i]*20);
+      if(ypos[i]*20 > h && Math.random() > 0.975) ypos[i] = 0;
+      ypos[i]++;
+    }
+    requestAnimationFrame(loop);
+  } loop();
 })();
 
 /* ============================================================
-   СЕКЦИЯ 5 — АУДИО
+   АУДИО
    ============================================================ */
 const Audio = (() => {
-  let ctx = null;
-  function ensure() { if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ctx && ctx.state === 'suspended') ctx.resume(); return ctx; }
-  function tone(freq, dur = 0.08, type = 'sine', vol = 0.15) { const c = ensure(); if (!c) return; const osc = c.createOscillator(); const gain = c.createGain(); osc.type = type; osc.frequency.value = freq; gain.gain.setValueAtTime(vol, c.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur); osc.connect(gain); gain.connect(c.destination); osc.start(c.currentTime); osc.stop(c.currentTime + dur); }
-  return { send() { tone(880, 0.06, 'sine', 0.12); }, receive() { tone(660, 0.08, 'sine', 0.12); setTimeout(() => tone(880, 0.06, 'sine', 0.1), 60); }, connect() { tone(440, 0.1); setTimeout(() => tone(660, 0.1), 90); setTimeout(() => tone(880, 0.15), 180); }, error() { tone(220, 0.15, 'sawtooth', 0.15); }, tap() { tone(1200, 0.02, 'square', 0.06); } };
+  let ctx;
+  const ensure = () => { if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); return ctx; };
+  const tone = (f, d=0.08, t='sine', v=0.1) => { const c=ensure(); const o=c.createOscillator(), g=c.createGain(); o.type=t; o.frequency.value=f; g.gain.setValueAtTime(v,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+d); };
+  return { send:()=>tone(880), recv:()=>{tone(660,0.08); setTimeout(()=>tone(880,0.06),60);}, conn:()=>{tone(440,0.1); setTimeout(()=>tone(660,0.1),90); setTimeout(()=>tone(880,0.15),180);}, err:()=>tone(220,0.15,'sawtooth',0.15) };
 })();
 
 /* ============================================================
-   СЕКЦИЯ 6 — TELEGRAM
-   ============================================================ */
-let tg = null;
-function initTelegram() { try { tg = window.Telegram?.WebApp; if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor?.('#000000'); tg.setBackgroundColor?.('#000000'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } } catch (e) {} }
-async function shareText(text) { if (navigator.share) { try { await navigator.share({ text }); showToast('Отправлено'); return true; } catch (e) { if (e.name === 'AbortError') return false; } } return await copyText(text); }
-async function copyText(text) { try { await navigator.clipboard.writeText(text); showToast('📋 Скопировано'); return true; } catch (e) { showToast('Не удалось скопировать', true); return false; } }
-
-/* ============================================================
-   СЕКЦИЯ 7 — КРИПТОГРАФИЯ
+   КРИПТОГРАФИЯ (AES-256-GCM)
    ============================================================ */
 const Crypto = (() => {
-  let cryptoKey = null;
-  async function setSecret(secret) { const data = new TextEncoder().encode('ifield-v1:' + secret); const hash = await crypto.subtle.digest('SHA-256', data); cryptoKey = await crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']); }
-  async function encrypt(plaintext) { if (!cryptoKey) throw new Error('no key'); const iv = randomBytes(12); const enc = new TextEncoder().encode(plaintext); const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, enc); const out = new Uint8Array(12 + cipher.byteLength); out.set(iv, 0); out.set(new Uint8Array(cipher), 12); return base64Encode(out); }
-  async function decrypt(b64) { if (!cryptoKey) throw new Error('no key'); const bytes = base64Decode(b64); const iv = bytes.subarray(0, 12); const cipher = bytes.subarray(12); const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, cipher); return new TextDecoder().decode(plain); }
-  function clear() { cryptoKey = null; }
-  return { setSecret, encrypt, decrypt, clear };
+  let key = null;
+  return {
+    setSecret: async (sec) => {
+      const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ifield-v2:'+sec));
+      key = await crypto.subtle.importKey('raw', hash, {name:'AES-GCM'}, false, ['encrypt','decrypt']);
+    },
+    encrypt: async (txt) => {
+      if(!key) throw new Error('No key');
+      const iv = randomBytes(12);
+      const enc = new TextEncoder().encode(txt);
+      const cipher = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc);
+      const out = new Uint8Array(12+cipher.byteLength); out.set(iv); out.set(new Uint8Array(cipher), 12);
+      return base64Encode(out);
+    },
+    decrypt: async (b64) => {
+      if(!key) throw new Error('No key');
+      const bytes = base64Decode(b64), iv = bytes.subarray(0,12), cipher = bytes.subarray(12);
+      const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, cipher);
+      return new TextDecoder().decode(plain);
+    },
+    clear: () => key = null
+  };
 })();
 
 /* ============================================================
-   СЕКЦИЯ 8 — WEBRTC + SIGNALING (+ ЛОГИ)
+   WEBRTC + SIGNALING
    ============================================================ */
-const SIGNALING_BASE = '';
-let peer = null; let dataChannel = null; let currentRoom = null; let answerPollTimer = null; let isConnected = false; let partnerTypingTimer = null;
+let peer, dataChannel, currentRoom, isConnected = false, typingTimer;
+const signaling = async (path, method='GET', body=null) => {
+  const opts = {method, headers:{}}; if(body) { opts.body = body; opts.headers['Content-Type'] = 'application/json'; }
+  const res = await fetch(path, opts);
+  if(!res.ok) throw new Error((await res.json().catch(()=>({}))).error || 'HTTP '+res.status);
+  return res.json();
+};
 
-async function signaling(path, method = 'GET', body = null) {
-  logToScreen(`API: ${method} ${path}...`);
-  const opts = { method, headers: {} };
-  if (body !== null) { opts.body = body; opts.headers['Content-Type'] = 'application/json'; }
-  try {
-    const res = await fetch(SIGNALING_BASE + path, opts);
-    if (!res.ok) { let msg = 'HTTP ' + res.status; try { const j = await res.json(); if (j.error) msg = j.error; } catch (e) {} logToScreen(`API ERROR: ${msg}`, true); throw new Error(msg); }
-    logToScreen(`API OK: ${path}`);
-    return await res.json();
-  } catch (e) { logToScreen(`NETWORK FAIL: ${e.message}`, true); throw e; }
-}
+const createPeer = () => new RTCPeerConnection({ iceServers: CONFIG.stunServers.map(u=>({urls:u})) });
+const waitIce = (pc) => new Promise(r => { if(pc.iceGatheringState==='complete') return r(); pc.addEventListener('icegatheringstatechange', () => { if(pc.iceGatheringState==='complete') r(); }); setTimeout(r, CONFIG.iceTimeout); });
 
-function createPeerConnection() { return new RTCPeerConnection({ iceServers: CONFIG.stunServers.map(u => ({ urls: u })), iceCandidatePoolSize: 0 }); }
-function waitIceComplete(pc) { return new Promise((resolve) => { if (pc.iceGatheringState === 'complete') return resolve(); const onStateChange = () => { if (pc.iceGatheringState === 'complete') { pc.removeEventListener('icegatheringstatechange', onStateChange); resolve(); } }; pc.addEventListener('icegatheringstatechange', onStateChange); setTimeout(() => { pc.removeEventListener('icegatheringstatechange', onStateChange); resolve(); }, CONFIG.iceTimeout); }); }
-
-function setupDataChannel(channel) {
+function setupDC(channel) {
   dataChannel = channel;
-  dataChannel.onopen = () => { isConnected = true; Audio.connect(); logToScreen('DataChannel OPEN'); updateChatStatus('подключено', true); updateStatusBar(); addSystemMessage('🔐 Соединение установлено. Канал зашифрован.'); if (currentRoom) signaling(`/api/room/${currentRoom.code}/cleanup`, 'POST').catch(() => {}); };
-  dataChannel.onclose = () => { isConnected = false; updateChatStatus('отключено', false); updateStatusBar(); addSystemMessage('⚪ Соединение закрыто.'); };
-  dataChannel.onerror = (err) => { logToScreen('DataChannel ERROR', true); };
-  dataChannel.onmessage = async (ev) => { try { const wrapper = JSON.parse(ev.data); if (wrapper.t === 'typing') { showPartnerTyping(); return; } if (wrapper.t === 'msg') { const plain = await Crypto.decrypt(wrapper.d); addMessage(plain, 'partner'); Audio.receive(); } } catch (e) { logToScreen('MSG DECRYPT FAIL', true); } };
+  dataChannel.onopen = () => {
+    isConnected = true; Audio.conn(); updateChatStatus('подключено', true); updateStatusBar();
+    addSystemMsg('🔐 КАНАЛ ЗАЩИЩЁН. Соединение установлено.');
+    if(currentRoom) signaling(`/api/room/${currentRoom.code}/cleanup`, 'POST').catch(()=>{});
+  };
+  dataChannel.onclose = () => { isConnected = false; updateChatStatus('отключено', false); updateStatusBar(); addSystemMsg('⚪ Соединение закрыто.'); };
+  dataChannel.onmessage = async (ev) => {
+    try {
+      const d = JSON.parse(ev.data);
+      if(d.t === 'typing') { $('typing-indicator').textContent = 'печатает...'; clearTimeout(typingTimer); typingTimer = setTimeout(()=>$('typing-indicator').textContent='', 2000); return; }
+      if(d.t === 'msg') { const txt = await Crypto.decrypt(d.d); addMsg(txt, 'partner'); Audio.recv(); }
+    } catch(e) { logToScreen('DECRYPT FAIL', true); }
+  };
 }
 
 async function hostStart() {
-  logToScreen('Host: start');
-  currentRoom = { code: generateRoomCode(), secret: generateSecret(), role: 'host' };
-  await Crypto.setSecret(currentRoom.secret);
-  $('host-code').textContent = currentRoom.code; $('host-secret').textContent = currentRoom.secret;
+  const code = Array.from(randomBytes(6)).map(b => 'abcdefghjkmnpqrstuvwxyz23456789'[b%32]).join('');
+  const secret = Array.from(randomBytes(32)).map(b => 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'[b%57]).join('');
+  currentRoom = { code, secret, role: 'host' };
+  await Crypto.setSecret(secret);
+  $('host-code').textContent = code; $('host-secret').textContent = secret;
   showScreen('host');
-  peer = createPeerConnection();
-  dataChannel = peer.createDataChannel('chat', { ordered: true });
-  setupDataChannel(dataChannel);
-  peer.onconnectionstatechange = () => { logToScreen('ICE State: ' + peer.connectionState); if (peer.connectionState === 'failed') handleConnectionFail('Не удалось установить соединение'); };
-  const offer = await peer.createOffer(); await peer.setLocalDescription(offer); await waitIceComplete(peer);
-  await signaling(`/api/room/${currentRoom.code}/offer`, 'POST', JSON.stringify({ sdp: peer.localDescription.sdp }));
-  answerPollTimer = setInterval(async () => {
+  
+  peer = createPeer(); setupDC(peer.createDataChannel('chat'));
+  peer.onconnectionstatechange = () => { if(peer.connectionState === 'failed') handleFail('Ошибка сети'); };
+  
+  const offer = await peer.createOffer(); await peer.setLocalDescription(offer); await waitIce(peer);
+  await signaling(`/api/room/${code}/offer`, 'POST', JSON.stringify({ sdp: peer.localDescription.sdp }));
+  
+  const poll = setInterval(async () => {
     try {
-      const res = await signaling(`/api/room/${currentRoom.code}/answer`);
-      if (res.data) { clearInterval(answerPollTimer); answerPollTimer = null; const answer = JSON.parse(res.data); await peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp }); showScreen('chat'); updateChatStatus('соединение...', false); }
-    } catch (e) { if (e.message !== 'not_found') logToScreen('Poll: ' + e.message, true); }
+      const res = await signaling(`/api/room/${code}/answer`);
+      if(res.data) { clearInterval(poll); await peer.setRemoteDescription({type:'answer', sdp: JSON.parse(res.data).sdp}); showScreen('chat'); updateChatStatus('соединение...', false); }
+    } catch(e) { if(e.message !== 'not_found') logToScreen('Poll: '+e.message, true); }
   }, CONFIG.answerPollInterval);
-  const origOnOpen = dataChannel.onopen; dataChannel.onopen = () => { if (origOnOpen) origOnOpen(); showScreen('chat'); };
+  dataChannel.onopen = () => { clearInterval(poll); showScreen('chat'); };
 }
 
 async function guestConnect(code, secret) {
-  logToScreen('Guest: start');
-  code = (code || '').trim().toLowerCase(); secret = (secret || '').trim();
-  if (!/^[a-z0-9]{6}$/.test(code)) return showToast('Код комнаты — 6 символов', true);
-  if (secret.length < 8) return showToast('Секрет слишком короткий', true);
-  currentRoom = { code, secret, role: 'guest' };
-  await Crypto.setSecret(secret);
-  showScreen('chat'); updateChatStatus('получаем оффер...', false);
+  if(!/^[a-z0-9]{6}$/.test(code)) return showToast('Неверный код', true);
+  currentRoom = { code, secret, role: 'guest' }; await Crypto.setSecret(secret);
+  showScreen('chat'); updateChatStatus('соединение...', false);
   try {
     const res = await signaling(`/api/room/${code}/offer`);
-    const offer = JSON.parse(res.data);
-    peer = createPeerConnection();
-    peer.ondatachannel = (ev) => { setupDataChannel(ev.channel); };
-    peer.onconnectionstatechange = () => { logToScreen('ICE State: ' + peer.connectionState); if (peer.connectionState === 'failed') handleConnectionFail('Ошибка соединения'); };
-    await peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp });
-    const answer = await peer.createAnswer(); await peer.setLocalDescription(answer); await waitIceComplete(peer);
+    peer = createPeer(); peer.ondatachannel = (ev) => setupDC(ev.channel);
+    peer.onconnectionstatechange = () => { if(peer.connectionState === 'failed') handleFail('Ошибка сети'); };
+    await peer.setRemoteDescription({type:'offer', sdp: JSON.parse(res.data).sdp});
+    const answer = await peer.createAnswer(); await peer.setLocalDescription(answer); await waitIce(peer);
     await signaling(`/api/room/${code}/answer`, 'PUT', JSON.stringify({ sdp: peer.localDescription.sdp }));
-    updateChatStatus('ожидание соединения...', false);
-  } catch (e) { handleConnectionFail(e.message === 'not_found' ? 'Комната не найдена' : 'Ошибка: ' + e.message); }
+  } catch(e) { handleFail(e.message === 'not_found' ? 'Комната не найдена' : e.message); }
 }
 
-function handleConnectionFail(msg) { Audio.error(); if (answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; } try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; isConnected = false; currentRoom = null; Crypto.clear(); $('err-msg').textContent = msg; showScreen('error'); }
+function handleFail(msg) { Audio.err(); isConnected = false; currentRoom = null; Crypto.clear(); try{peer.close();}catch(e){} peer=null; dataChannel=null; showToast(msg, true); showScreen('start'); }
 
 /* ============================================================
-   СЕКЦИЯ 9 — UI
+   UI
    ============================================================ */
-function addMessage(text, who) { const messages = $('messages'); const div = document.createElement('div'); div.className = 'msg ' + who; const textSpan = document.createElement('span'); textSpan.textContent = text; div.appendChild(textSpan); const meta = document.createElement('span'); meta.className = 'meta'; meta.textContent = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); div.appendChild(meta); messages.appendChild(div); messages.scrollTop = messages.scrollHeight; }
-function addSystemMessage(text) { const messages = $('messages'); const div = document.createElement('div'); div.className = 'msg system'; div.textContent = text; messages.appendChild(div); messages.scrollTop = messages.scrollHeight; }
-function updateChatStatus(text, online) { $('chat-status').textContent = text; $('chat-dot').className = online ? 'dot-online' : 'dot-offline'; }
-function showPartnerTyping() { $('typing-indicator').textContent = 'печатает...'; clearTimeout(partnerTypingTimer); partnerTypingTimer = setTimeout(() => { $('typing-indicator').textContent = ''; }, 2000); }
-function updateStatusBar() { $('sb-enc').textContent = Crypto ? '🔐 AES-256-GCM' : '🔓'; $('sb-datach').textContent = '📡 ' + (dataChannel ? dataChannel.readyState : '—'); $('sb-time').textContent = new Date().toLocaleTimeString('ru-RU'); }
-setInterval(updateStatusBar, 1000);
-
-async function sendMessage() {
-  const input = $('msg-input'); const text = input.value.trim(); if (!text) return;
-  if (!isConnected || !dataChannel || dataChannel.readyState !== 'open') return showToast('Нет соединения', true);
-  try { const cipher = await Crypto.encrypt(text); dataChannel.send(JSON.stringify({ t: 'msg', d: cipher })); addMessage(text, 'me'); input.value = ''; Audio.send(); } catch (e) { showToast('Ошибка шифрования', true); logToScreen('ENC FAIL', true); }
+function addMsg(txt, type) {
+  const div = document.createElement('div'); div.className = 'msg '+type;
+  div.innerHTML = `<span>${txt}</span><span class="meta">${new Date().toLocaleTimeString()}</span>`;
+  $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight;
 }
-let lastTypingSent = 0;
-function sendTypingSignal() { if (!isConnected || !dataChannel || dataChannel.readyState !== 'open') return; const now = Date.now(); if (now - lastTypingSent < 1500) return; lastTypingSent = now; try { dataChannel.send(JSON.stringify({ t: 'typing' })); } catch (e) {} }
+function addSystemMsg(txt) { const div = document.createElement('div'); div.className = 'msg system'; div.textContent = txt; $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight; }
+function updateChatStatus(txt, on) { $('chat-status').textContent = txt; $('chat-dot').className = on ? 'dot-online' : 'dot-offline'; }
+let toastT;
+function showToast(t, err) { const el=$('toast'); el.textContent=t; el.className='toast show'+(err?' error':''); clearTimeout(toastT); toastT=setTimeout(()=>el.className='toast'+(err?' error':''), 2500); }
+function modal(title, text) { return new Promise(r => { $('modal-title').textContent=title; $('modal-text').textContent=text; $('modal').classList.add('active'); $('modal-yes').onclick=()=>{ $('modal').classList.remove('active'); r(true); }; $('modal-no').onclick=()=>{ $('modal').classList.remove('active'); r(false); }; }); }
 
 /* ============================================================
-   СЕКЦИЯ 10 — КНОПКИ
+   КНОПКИ И ДОНАТЫ
    ============================================================ */
-$('btn-create').addEventListener('click', async () => { Audio.tap(); try { await hostStart(); } catch (e) { handleConnectionFail('Ошибка: ' + e.message); } });
-$('btn-join').addEventListener('click', () => { Audio.tap(); $('guest-code').value = ''; $('guest-secret').value = ''; showScreen('guest'); });
-(function parseUrl() { try { const p = new URLSearchParams(location.search); const r = p.get('r') || p.get('room'); const k = p.get('k') || p.get('key') || p.get('secret'); if (r && k) { $('guest-code').value = r.toLowerCase(); $('guest-secret').value = k; showScreen('guest'); showToast('Данные заполнены. Жми "Подключиться".'); } } catch (e) {} })();
-$('btn-copy').addEventListener('click', async () => { if (!currentRoom) return; await copyText(`iField — секретный чат\n\nКод: ${currentRoom.code}\nКлюч: ${currentRoom.secret}\n\nОткрой приложение → "Войти по коду"`); });
-$('btn-share').addEventListener('click', async () => { if (!currentRoom) return; const link = `${location.origin + location.pathname}?r=${currentRoom.code}&k=${encodeURIComponent(currentRoom.secret)}`; const ok = await shareText(`iField — приватный чат\n${link}`); if (!ok) await copyText(`Код: ${currentRoom.code}\nКлюч: ${currentRoom.secret}`); });
-$('btn-host-cancel').addEventListener('click', async () => { const ok = await confirmModal('Отменить?', 'Комната будет удалена.'); if (!ok) return; if (answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; } try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; currentRoom = null; Crypto.clear(); showScreen('start'); });
-$('btn-guest-connect').addEventListener('click', async () => { Audio.tap(); await guestConnect($('guest-code').value, $('guest-secret').value); });
-$('btn-guest-back').addEventListener('click', () => showScreen('start'));
-$('guest-code').addEventListener('input', (e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''); if (e.target.value.length === 6) $('guest-secret').focus(); });
-$('btn-send').addEventListener('click', sendMessage);
-$('msg-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
-$('msg-input').addEventListener('input', sendTypingSignal);
-$('btn-leave').addEventListener('click', async () => { const ok = await confirmModal('Выйти?', 'История исчезнет.'); if (!ok) return; try { dataChannel?.close(); } catch (e) {} try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; currentRoom = null; isConnected = false; Crypto.clear(); $('messages').innerHTML = ''; $('typing-indicator').textContent = ''; showScreen('start'); });
-$('btn-error-back').addEventListener('click', () => { try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; currentRoom = null; isConnected = false; Crypto.clear(); showScreen('start'); });
-window.addEventListener('popstate', () => { if (isConnected) history.pushState(null, '', location.href); });
+$('btn-create').onclick = () => { Audio.send(); hostStart().catch(e => handleFail(e.message)); };
+$('btn-join').onclick = () => { Audio.send(); $('guest-code').value=''; $('guest-secret').value=''; showScreen('guest'); };
+$('btn-info').onclick = () => { Audio.send(); showScreen('info'); };
+$('btn-info-back').onclick = () => { Audio.send(); showScreen('start'); };
 
-/* ============================================================
-   СЕКЦИЯ 11 — СТАРТ
-   ============================================================ */
-initTelegram(); updateStatusBar();
-window.addEventListener('beforeunload', () => { Crypto.clear(); try { dataChannel?.close(); } catch (e) {} try { peer?.close(); } catch (e) {} });
-logToScreen('iField P2P loaded successfully');
+$('btn-host-cancel').onclick = () => { currentRoom=null; try{peer.close();}catch(e){} showScreen('start'); };
+$('btn-guest-back').onclick = () => showScreen('start');
+$('btn-guest-connect').onclick = () => guestConnect($('guest-code').value, $('guest-secret').value);
+
+$('btn-copy').onclick = () => { if(!currentRoom) return; navigator.clipboard.writeText(`Код: ${currentRoom.code}\nКлюч: ${currentRoom.secret}`); showToast('Скопировано'); };
+$('btn-share').onclick = () => { if(!currentRoom) return; const link = `${location.origin+location.pathname}?r=${currentRoom.code}&k=${encodeURIComponent(currentRoom.secret)}`; navigator.share ? navigator.share({text:`iField Чат\n${link}`}) : navigator.clipboard.writeText(link).then(()=>showToast('Ссылка скопирована')); };
+
+$('btn-send').onclick = async () => {
+  const val = $('msg-input').value.trim(); if(!val || !isConnected) return;
+  try { const enc = await Crypto.encrypt(val); dataChannel.send(JSON.stringify({t:'msg', d:enc})); addMsg(val, 'me'); $('msg-input').value=''; Audio.send(); } catch(e) { showToast('Ошибка шифрования', true); }
+};
+$('msg-input').onkeydown = (e) => { if(e.key === 'Enter') $('btn-send').click(); };
+$('msg-input').oninput = () => { if(!isConnected) return; const now=Date.now(); if(now - (window._lastT||0) > 1500) { window._lastT=now; dataChannel.send(JSON.stringify({t:'typing'})); } };
+$('btn-leave').onclick = async () => { if(await modal('Выйти?', 'История будет удалена.')) { isConnected=false; currentRoom=null; Crypto.clear(); try{dataChannel.close(); peer.close();}catch(e){} $('messages').innerHTML=''; showScreen('start'); } };
+
+// ДОНАТЫ
+$('btn-donate').onclick = async () => {
+  const amount = prompt('Сколько звёзд (⭐) хотите пожертвовать?', '50');
+  if(!amount || isNaN(amount) || amount <= 0) return;
+  try {
+    showToast('Создаем счет...');
+    const res = await fetch('/api/donate/link', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:+amount}) });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    if(window.Telegram?.WebApp?.openInvoice) {
+      window.Telegram.WebApp.openInvoice(data.link, (status) => {
+        if(status === 'paid') showToast('🎉 Спасибо за поддержку!');
+      });
+    } else {
+      window.open(data.link, '_blank');
+    }
+  } catch(e) { showToast('Ошибка: '+e.message, true); }
+};
+
+// Старт
+window.addEventListener('beforeunload', () => { Crypto.clear(); try{dataChannel.close(); peer.close();}catch(e){} });
+logToScreen('iField P2P Loaded');
 </script>
 </body>
 </html>
