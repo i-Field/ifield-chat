@@ -5,12 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>iField — Приватный P2P чат</title>
-<!-- Подключаем Telegram WebApp API -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-/* ============================================================
-   СЕКЦИЯ 1 — СТИЛИ (Cyberpunk / Glassmorphism)
-   ============================================================ */
 :root {
   --green: #00ff41;
   --green-dim: #008f11;
@@ -35,7 +31,6 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 
 #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.15; pointer-events: none; }
 
-/* ---------- Экраны ---------- */
 .screen {
   position: fixed; inset: 0; display: none; flex-direction: column;
   padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 16px);
@@ -43,7 +38,6 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 }
 .screen.active { display: flex; }
 
-/* ---------- Главный экран ---------- */
 #screen-start { align-items: center; justify-content: center; text-align: center; }
 .logo { font-size: 72px; margin-bottom: 8px; filter: drop-shadow(0 0 20px var(--green)); animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
@@ -64,7 +58,6 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 .btn-row { display: flex; gap: 8px; width: 100%; max-width: 320px; }
 .btn-row .big-btn { margin: 8px 0; padding: 12px; font-size: 14px; }
 
-/* ---------- Экран хоста/гостя ---------- */
 .section-title { font-size: 11px; opacity: 0.6; letter-spacing: 1px; margin: 16px 0 6px; text-transform: uppercase; }
 .code-box {
   background: var(--panel); border: 1px solid var(--border);
@@ -72,6 +65,7 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
   font-size: 24px; font-weight: 700; letter-spacing: 3px;
   text-align: center; color: var(--green); text-shadow: 0 0 10px var(--green);
   user-select: all; -webkit-user-select: all; backdrop-filter: blur(10px);
+  cursor: pointer;
 }
 .code-box.secret { font-size: 14px; letter-spacing: 1px; color: var(--warn); text-shadow: 0 0 10px var(--warn); }
 .input-field {
@@ -83,7 +77,6 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 }
 .input-field:focus { border-color: var(--green); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
 
-/* ---------- Чат ---------- */
 #screen-chat { padding: 0; }
 .chat-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -96,11 +89,13 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 .dot-online { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 .dot-offline { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
 .header-btn { background: transparent; border: none; color: var(--green); font-size: 20px; padding: 4px; }
+
 .messages { flex: 1; overflow-y: auto; padding: 16px; scroll-behavior: smooth; }
 .msg {
   max-width: 85%; margin-bottom: 10px; padding: 12px 16px;
   border-radius: 16px; font-size: 15px; line-height: 1.4;
   animation: msgIn 0.2s ease-out; backdrop-filter: blur(5px);
+  transition: opacity 0.5s;
 }
 @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .msg.me { margin-left: auto; background: rgba(0, 255, 65, 0.15); border: 1px solid rgba(0, 255, 65, 0.3); border-bottom-right-radius: 4px; }
@@ -112,7 +107,6 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 .input-bar input { flex: 1; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 20px; color: var(--green); font-size: 15px; outline: none; }
 .send-btn { padding: 0 20px; background: var(--green); border: none; border-radius: 20px; color: #000; font-size: 18px; font-weight: bold; }
 
-/* ---------- Статус-бар (Миллисекунды) ---------- */
 .status-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: rgba(0,0,0,0.95); border-top: 1px solid var(--border);
@@ -122,10 +116,10 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
   font-family: "SF Mono", monospace; pointer-events: none;
 }
 
-/* ---------- Модалки и Утилиты ---------- */
 .toast { position: fixed; top: calc(var(--safe-top) + 16px); left: 50%; transform: translate(-50%, -100px); background: rgba(0, 30, 0, 0.95); border: 1px solid var(--green); color: var(--green); padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 100; transition: all 0.3s; box-shadow: 0 0 20px rgba(0,255,65,0.3); }
 .toast.show { transform: translate(-50%, 0); }
 .toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 20px rgba(255,50,50,0.3); }
+
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; backdrop-filter: blur(5px); }
 .modal-overlay.active { display: flex; }
 .modal { background: #0a0a0a; border: 1px solid var(--green); border-radius: 16px; padding: 24px; max-width: 340px; width: 100%; box-shadow: 0 0 40px rgba(0,255,65,0.2); }
@@ -162,8 +156,8 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 <div id="screen-host" class="screen">
   <div class="section-title">📋 Код комнаты</div>
   <div class="code-box" id="host-code">...</div>
-  <div class="section-title">🔐 Ключ шифрования</div>
-  <div class="code-box secret" id="host-secret">...</div>
+  <div class="section-title">🔐 Ключ (нажми, чтобы показать)</div>
+  <div class="code-box secret" id="host-secret" onclick="toggleSecretVisibility()">...</div>
   <div class="btn-row">
     <button class="big-btn" id="btn-share">📤 Поделиться</button>
     <button class="big-btn" id="btn-copy">📋 Копировать</button>
@@ -187,9 +181,12 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 <!-- ЭКРАН ЧАТА -->
 <div id="screen-chat" class="screen">
   <div class="chat-header">
-    <button class="header-btn" id="btn-leave">✕</button>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="header-btn" id="btn-leave" title="Выйти">✕</button>
+      <button class="header-btn" id="btn-panic" style="color:var(--danger); font-size:18px;" title="Стереть всё и выйти">💥</button>
+    </div>
     <div class="chat-title">🔐 ЗАЩИЩЁННЫЙ КАНАЛ</div>
-    <div class="status"><span class="dot-offline" id="chat-dot"></span><span id="chat-status">...</span></div>
+    <button class="header-btn" id="btn-burn" style="font-size:11px; border:1px solid var(--warn); padding:4px 8px; border-radius:8px; color:var(--warn);">🔥 ВЫКЛ</button>
   </div>
   <div class="messages" id="messages"></div>
   <div class="typing" id="typing-indicator"></div>
@@ -203,14 +200,11 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 <div id="screen-info" class="screen" style="overflow-y:auto; padding-top:60px;">
   <div class="title" style="font-size:24px; margin-bottom:20px;">📖 Инструкция</div>
   <div style="font-size:14px; line-height:1.6; opacity:0.8; margin-bottom:16px;">
-    <b>1. Как начать?</b><br>
-    Нажми «Создать комнату». Приложение сгенерирует <b>Код</b> и <b>Ключ</b>.<br><br>
-    <b>2. Как подключиться?</b><br>
-    Отправь другу Код и Ключ. Он должен нажать «Войти по коду» и ввести их.<br><br>
-    <b>3. Приватность</b><br>
-    Сообщения шифруются (AES-256 + SHA-512) и идут напрямую между устройствами. Сервер (Cloudflare) видит только технические данные для связи и стирает их через 5 минут.<br><br>
-    <b>4. Донат</b><br>
-    Вы можете поддержать проект звёздами Telegram. Это добровольно!
+    <b>1. Как начать?</b><br>Нажми «Создать комнату». Приложение сгенерирует <b>Код</b> и <b>Ключ</b>.<br><br>
+    <b>2. Как подключиться?</b><br>Отправь другу Код и Ключ. Он должен нажать «Войти по коду» и ввести их.<br><br>
+    <b>3. Приватность</b><br>Сообщения шифруются (AES-256 + SHA-512) и идут напрямую между устройствами. Сервер (Cloudflare) видит только технические данные для связи и стирает их через 5 минут.<br><br>
+    <b>4. Режим секретности</b><br>Кнопка 🔥 в чате включает самоликвидацию: сообщения исчезнут через 10 секунд после прочтения.<br><br>
+    <b>5. Кнопка 💥</b><br>Мгновенно стирает всю историю и ключи, если рядом кто-то посторонний.
   </div>
   <button class="big-btn" id="btn-info-back" style="margin-top:20px;">← Назад</button>
 </div>
@@ -286,7 +280,14 @@ window.onerror = (m, u, l) => logToScreen(`JS ERR: ${m} (line ${l})`, true);
 
 // Экраны
 const screens = { start: $('screen-start'), host: $('screen-host'), guest: $('screen-guest'), chat: $('screen-chat'), info: $('screen-info'), donate: $('screen-donate') };
-function showScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); if(screens[name]) screens[name].classList.add('active'); }
+function showScreen(name) { 
+  Object.values(screens).forEach(s => s.classList.remove('active')); 
+  if(screens[name]) screens[name].classList.add('active'); 
+  if (name === 'host') {
+    secretHidden = true;
+    if (currentRoom) $('host-secret').textContent = '••••••••••••••••';
+  }
+}
 
 /* ============================================================
    ВРЕМЯ ДО МИЛЛИСЕКУНД + СТАТУС БАР
@@ -385,14 +386,23 @@ function setupDC(channel) {
   dataChannel.onopen = () => {
     isConnected = true; Audio.conn(); updateChatStatus('подключено', true); updateStatusBar();
     addSystemMsg('🔐 КАНАЛ ЗАЩИЩЁН. Соединение установлено.');
+    try { window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success'); } catch(e){}
     if(currentRoom) signaling(`/api/room/${currentRoom.code}/cleanup`, 'POST').catch(()=>{});
   };
-  dataChannel.onclose = () => { isConnected = false; updateChatStatus('отключено', false); updateStatusBar(); addSystemMsg('⚪ Соединение закрыто.'); };
+  dataChannel.onclose = () => { 
+    isConnected = false; updateChatStatus('переподключение...', false); updateStatusBar(); 
+    addSystemMsg('⚪ Соединение потеряно. Ожидание...'); 
+  };
   dataChannel.onmessage = async (ev) => {
     try {
       const d = JSON.parse(ev.data);
       if(d.t === 'typing') { $('typing-indicator').textContent = 'печатает...'; clearTimeout(typingTimer); typingTimer = setTimeout(()=>$('typing-indicator').textContent='', 2000); return; }
-      if(d.t === 'msg') { const txt = await Crypto.decrypt(d.d); addMsg(txt, 'partner'); Audio.recv(); }
+      if(d.t === 'msg') { 
+        const txt = await Crypto.decrypt(d.d); 
+        addMsg(txt, 'partner'); 
+        Audio.recv(); 
+        try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light'); } catch(e){}
+      }
     } catch(e) { logToScreen('DECRYPT FAIL', true); }
   };
 }
@@ -402,7 +412,7 @@ async function hostStart() {
   const secret = Array.from(randomBytes(32)).map(b => 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'[b%57]).join('');
   currentRoom = { code, secret, role: 'host' };
   await Crypto.setSecret(secret);
-  $('host-code').textContent = code; $('host-secret').textContent = secret;
+  $('host-code').textContent = code; 
   showScreen('host');
   
   peer = createPeer(); setupDC(peer.createDataChannel('chat'));
@@ -439,10 +449,39 @@ function handleFail(msg) { Audio.err(); isConnected = false; currentRoom = null;
 /* ============================================================
    UI
    ============================================================ */
+let burnMode = false; 
+let secretHidden = true; 
+
+window.toggleSecretVisibility = function() {
+  const el = $('host-secret');
+  if (!currentRoom) return;
+  secretHidden = !secretHidden;
+  el.textContent = secretHidden ? '••••••••••••••••' : currentRoom.secret;
+  Audio.send();
+};
+
+function panicWipe() {
+  Audio.err();
+  isConnected = false; currentRoom = null; Crypto.clear();
+  try { if(dataChannel) dataChannel.close(); if(peer) peer.close(); } catch(e) {}
+  peer = null; dataChannel = null;
+  $('messages').innerHTML = '';
+  $('host-secret').textContent = '...';
+  showScreen('start');
+  showToast('💥 Все данные стерты!', true);
+}
+
 function addMsg(txt, type) {
   const div = document.createElement('div'); div.className = 'msg '+type;
   div.innerHTML = `<span>${txt}</span><span class="meta">${new Date().toLocaleTimeString()}</span>`;
   $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight;
+  
+  if (burnMode) {
+    setTimeout(() => {
+      div.style.opacity = '0';
+      setTimeout(() => div.remove(), 500);
+    }, 10000);
+  }
 }
 function addSystemMsg(txt) { const div = document.createElement('div'); div.className = 'msg system'; div.textContent = txt; $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight; }
 function updateChatStatus(txt, on) { $('chat-status').textContent = txt; $('chat-dot').className = on ? 'dot-online' : 'dot-offline'; }
@@ -467,54 +506,61 @@ $('btn-share').onclick = () => { if(!currentRoom) return; const link = `${locati
 
 $('btn-send').onclick = async () => {
   const val = $('msg-input').value.trim(); if(!val || !isConnected) return;
-  try { const enc = await Crypto.encrypt(val); dataChannel.send(JSON.stringify({t:'msg', d:enc})); addMsg(val, 'me'); $('msg-input').value=''; Audio.send(); } catch(e) { showToast('Ошибка шифрования', true); }
+  try { 
+    const enc = await Crypto.encrypt(val); 
+    dataChannel.send(JSON.stringify({t:'msg', d:enc})); 
+    addMsg(val, 'me'); 
+    $('msg-input').value=''; 
+    Audio.send(); 
+    try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light'); } catch(e){}
+  } catch(e) { showToast('Ошибка шифрования', true); }
 };
 $('msg-input').onkeydown = (e) => { if(e.key === 'Enter') $('btn-send').click(); };
 $('msg-input').oninput = () => { if(!isConnected) return; const now=Date.now(); if(now - (window._lastT||0) > 1500) { window._lastT=now; dataChannel.send(JSON.stringify({t:'typing'})); } };
-$('btn-leave').onclick = async () => { if(await modal('Выйти?', 'История будет удалена.')) { isConnected=false; currentRoom=null; Crypto.clear(); try{dataChannel.close(); peer.close();}catch(e){} $('messages').innerHTML=''; showScreen('start'); } };
 
-// ЭКРАН ДОНАТА
+$('btn-panic').onclick = () => { if(confirm('Стереть всё и выйти?')) panicWipe(); };
+$('btn-burn').onclick = () => {
+  burnMode = !burnMode;
+  $('btn-burn').textContent = burnMode ? '🔥 ВКЛ' : '🔥 ВЫКЛ';
+  $('btn-burn').style.color = burnMode ? '#ff3333' : 'var(--warn)';
+  $('btn-burn').style.borderColor = burnMode ? '#ff3333' : 'var(--warn)';
+  showToast(burnMode ? 'Режим секретности: ВКЛ' : 'Режим секретности: ВЫКЛ');
+  Audio.send();
+};
+
+$('btn-leave').onclick = async () => { 
+  if(await modal('Выйти?', 'История будет удалена.')) { 
+    isConnected=false; currentRoom=null; Crypto.clear(); 
+    try{dataChannel.close(); peer.close();}catch(e){} 
+    $('messages').innerHTML=''; 
+    showScreen('start'); 
+  } 
+};
+
 $('btn-donate').onclick = () => { Audio.send(); showScreen('donate'); };
 
-// ФУНКЦИЯ ОПЛАТЫ (С ЛОГАМИ)
 async function processDonation(amount) {
   try {
     showToast(`Создаем счет на ${amount}⭐...`);
-    logToScreen(`Запрос счета на ${amount}...`);
-    
     const res = await fetch('/api/donate/link', { 
-      method: 'POST', 
-      headers: {'Content-Type': 'application/json'}, 
-      body: JSON.stringify({ amount }) 
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ amount }) 
     });
     const data = await res.json();
-    
-    if (data.error) {
-      logToScreen(`Ошибка API: ${data.error}`, true);
-      throw new Error(data.error);
-    }
-    
-    logToScreen(`Счет создан! Ссылка: ${data.link.substring(0, 30)}...`);
+    if (data.error) throw new Error(data.error);
     
     if (window.Telegram?.WebApp?.openInvoice) {
-      logToScreen(`Открываем окно оплаты Telegram...`);
       window.Telegram.WebApp.openInvoice(data.link, (status) => {
-        logToScreen(`Статус оплаты: ${status}`);
         if(status === 'paid') showToast('🎉 Спасибо за поддержку!');
         else if(status === 'cancelled') showToast('Отменено', true);
-        else showToast('Ошибка оплаты', true);
       });
     } else {
-      logToScreen(`ВНИМАНИЕ: Приложение открыто не в Telegram. Ссылка откроется в браузере.`, true);
       window.open(data.link, '_blank');
     }
   } catch(e) { 
-    logToScreen(`КРАШ ОПЛАТЫ: ${e.message}`, true);
     showToast('Ошибка: ' + e.message, true); 
   }
 }
 
-// Старт
 window.addEventListener('beforeunload', () => { Crypto.clear(); try{dataChannel.close(); peer.close();}catch(e){} });
 logToScreen('iField P2P Loaded');
 </script>
