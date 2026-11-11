@@ -147,7 +147,6 @@ async function handleTelegramWebhook(request, env) {
   // 1. Команда /start
   if (update.message && update.message.text === '/start') {
     const chatId = update.message.chat.id;
-    // Берем домен из запроса или прописываем вручную (для запаса)
     const appUrl = 'https://ifield-chat.qx420.workers.dev/'; 
     
     await callTg('sendMessage', {
@@ -169,7 +168,6 @@ async function handleTelegramWebhook(request, env) {
   // 3. Успешная оплата (Донат)
   if (update.message && update.message.successful_payment) {
     const pay = update.message.successful_payment;
-    // Сохраняем в базу факт оплаты
     await env.IFIELD_CRYPTO_KV.put(`donate:${pay.telegram_payment_charge_id}`, pay.total_amount);
     
     await callTg('sendMessage', {
