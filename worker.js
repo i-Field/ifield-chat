@@ -1,6 +1,6 @@
 // worker.js — ifield P2P Chat Backend
-const TTL = 300; 
-const MAX_SIZE = 8000;
+const TTL = 300;         // 5 минут — жизнь комнаты в KV
+const MAX_SIZE = 8000;   // макс размер SDP
 
 export default {
   async fetch(request, env) {
@@ -16,7 +16,6 @@ export default {
 
     // ========================================================
     // 🛡️ НЕВИДИМЫЙ ОХРАННИК (Защита исходников)
-    // Если кто-то запрашивает код сервера, мы говорим "Не найдено"
     // ========================================================
     const forbiddenPaths = ['/worker.js', '/wrangler.toml', '/.git', '/package.json', '/package-lock.json'];
     if (forbiddenPaths.includes(url.pathname) || url.pathname.startsWith('/.git/')) {
@@ -24,15 +23,29 @@ export default {
     }
 
     try {
-      // --- ВЕБХУК TELEGRAM (ДОНАТЫ) ---
+      // ========================================================
+      // 🤖 БЕЗОПАСНАЯ НАСТРОЙКА БОТА (Без ввода токена в браузере)
+      // ========================================================
+      if (url.pathname === '/api/setup/webhook' && request.method === 'GET') {
+        if (!env.BOT_TOKEN) return json({ error: 'BOT_TOKEN не задан в Cloudflare' }, 500, cors);
+        const tgRes = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/setWebhook?url=${url.origin}/webhook`);
+        const tgData = await tgRes.json();
+        return json(tgData, 200, cors);
+      }
+
+      // ========================================================
+      // 🤖 ВЕБХУК TELEGRAM (Обработка команд и оплат)
+      // ========================================================
       if (url.pathname === '/webhook' && request.method === 'POST') {
         return handleTelegramWebhook(request, env);
       }
 
-      // --- API ДЛЯ ДОНАТОВ ---
+      // ========================================================
+      // 💎 API ДЛЯ ДОНАТОВ (Telegram Stars)
+      // ========================================================
       if (url.pathname === '/api/donate/link' && request.method === 'POST') {
         const body = await request.json();
-        const amount = body.amount || 50;
+        const amount = parseInt(body.amount, 10) || 50;
         const token = env.BOT_TOKEN; 
         
         if (!token) return json({ error: 'Bot token not configured' }, 500, cors);
@@ -54,7 +67,9 @@ export default {
         return json({ error: data.description }, 500, cors);
       }
 
-      // --- API ДЛЯ ЧАТА (СИГНАЛИНГ) ---
+      // ========================================================
+      // 🔐 API ДЛЯ ЧАТА (СИГНАЛИНГ)
+      // ========================================================
       if (url.pathname.startsWith('/api/')) {
         if (url.pathname === '/api/room/new' && request.method === 'POST') {
           for (let i = 0; i < 5; i++) {
@@ -102,6 +117,9 @@ export default {
   }
 };
 
+// ========================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ========================================================
 function json(data, status, cors) {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...cors } });
 }
@@ -114,7 +132,9 @@ function generateCode() {
   return code;
 }
 
-// Логика бота
+// ========================================================
+// ОБРАБОТКА БОТА (КОМАНДЫ И ПЛАТЕЖИ)
+// ========================================================
 async function handleTelegramWebhook(request, env) {
   const update = await request.json();
   const token = env.BOT_TOKEN;
@@ -124,13 +144,34 @@ async function handleTelegramWebhook(request, env) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
 
+  // 1. Команда /start
+  if (update.message && update.message.text === '/start') {
+    const chatId = update.message.chat.id;
+    // Берем домен из запроса или прописываем вручную (для запаса)
+    const appUrl = 'https://ifield-chat.qx420.workers.dev/'; 
+    
+    await callTg('sendMessage', {
+      chat_id: chatId,
+      text: "🏴‍☠️ Приветствую, капитан!\n\nЭто iField — приватный P2P чат. Твои сообщения шифруются (AES-256) и идут напрямую, без серверов и логов.\n\nЖми кнопку ниже, чтобы войти в защищенный канал!",
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "🔐 Открыть приложение", web_app: { url: appUrl } }
+        ]]
+      }
+    });
+  }
+
+  // 2. Подтверждение перед оплатой (Telegram требует за 10 сек)
   if (update.pre_checkout_query) {
     await callTg('answerPreCheckoutQuery', { pre_checkout_query_id: update.pre_checkout_query.id, ok: true });
   }
 
+  // 3. Успешная оплата (Донат)
   if (update.message && update.message.successful_payment) {
     const pay = update.message.successful_payment;
+    // Сохраняем в базу факт оплаты
     await env.IFIELD_CRYPTO_KV.put(`donate:${pay.telegram_payment_charge_id}`, pay.total_amount);
+    
     await callTg('sendMessage', {
       chat_id: update.message.chat.id,
       text: `💎 Огромное спасибо за поддержку! Вы пожертвовали ${pay.total_amount} ⭐. Это помогает проекту расти!`
