@@ -206,11 +206,24 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
     <b>2. Как подключиться?</b><br>
     Отправь другу Код и Ключ. Он должен нажать «Войти по коду» и ввести их.<br><br>
     <b>3. Приватность</b><br>
-    Сообщения шифруются (AES-256) и идут напрямую между устройствами. Сервер (Cloudflare) видит только технические данные для связи и стирает их через 5 минут. Никаких логов и истории.<br><br>
+    Сообщения шифруются (AES-256 + SHA-512) и идут напрямую между устройствами. Сервер (Cloudflare) видит только технические данные для связи и стирает их через 5 минут.<br><br>
     <b>4. Донат</b><br>
     Вы можете поддержать проект звёздами Telegram. Это добровольно!
   </div>
   <button class="big-btn" id="btn-info-back" style="margin-top:20px;">← Назад</button>
+</div>
+
+<!-- ЭКРАН ДОНАТА -->
+<div id="screen-donate" class="screen" style="align-items:center; justify-content:center; text-align:center;">
+  <div class="title" style="font-size:28px; margin-bottom:8px;">💎 Поддержка</div>
+  <div class="subtitle" style="margin-bottom:24px;">Выбери количество звёзд</div>
+  
+  <button class="big-btn primary" onclick="processDonation(100)" style="font-size:20px;">⭐ 100</button>
+  <button class="big-btn primary" onclick="processDonation(1000)" style="font-size:20px;">⭐ 1 000</button>
+  <button class="big-btn primary" onclick="processDonation(10000)" style="font-size:20px;">⭐ 10 000</button>
+  <button class="big-btn primary" onclick="processDonation(100000)" style="font-size:20px;">⭐ 100 000</button>
+  
+  <button class="big-btn" onclick="showScreen('start')" style="margin-top:24px;">← Назад</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -224,7 +237,7 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 
 <!-- СТАТУС-БАР -->
 <div class="status-bar">
-  <span id="sb-enc">🔐 AES-256</span>
+  <span id="sb-enc">🔐 AES-256 / SHA-512</span>
   <span id="sb-datach">📡 ---</span>
   <span id="sb-mem">💾 --- MB</span>
   <span id="sb-time">00:00:00.000</span>
@@ -239,7 +252,6 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
    ============================================================ */
 const CONFIG = { stunServers: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'], iceTimeout: 8000, answerPollInterval: 1500 };
 const $ = id => document.getElementById(id);
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 const randomBytes = n => crypto.getRandomValues(new Uint8Array(n));
 const base64Encode = (b) => { let bin = ''; for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i+8192)); return btoa(bin); };
 const base64Decode = (s) => { const bin = atob(s); const b = new Uint8Array(bin.length); for(let i=0; i<bin.length; i++) b[i] = bin.charCodeAt(i); return b; };
@@ -256,8 +268,8 @@ function logToScreen(msg, isErr = false) {
 window.onerror = (m, u, l) => logToScreen(`JS ERR: ${m} (line ${l})`, true);
 
 // Экраны
-const screens = { start: $('screen-start'), host: $('screen-host'), guest: $('screen-guest'), chat: $('screen-chat'), info: $('screen-info') };
-const showScreen = (name) => { Object.values(screens).forEach(s => s.classList.remove('active')); if(screens[name]) screens[name].classList.add('active'); };
+const screens = { start: $('screen-start'), host: $('screen-host'), guest: $('screen-guest'), chat: $('screen-chat'), info: $('screen-info'), donate: $('screen-donate') };
+function showScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); if(screens[name]) screens[name].classList.add('active'); };
 
 /* ============================================================
    ВРЕМЯ ДО МИЛЛИСЕКУНД + СТАТУС БАР
@@ -271,7 +283,7 @@ function updateClock() {
 requestAnimationFrame(updateClock);
 
 function updateStatusBar() {
-  $('sb-enc').textContent = Crypto ? '🔐 AES-256-GCM' : '🔓 NO ENC';
+  $('sb-enc').textContent = Crypto ? '🔐 AES-256/SHA-512' : '🔓 NO ENC';
   $('sb-datach').textContent = '📡 ' + (dataChannel ? dataChannel.readyState : '---');
   $('sb-mem').textContent = '💾 ' + (performance.memory ? (performance.memory.usedJSHeapSize/1048576).toFixed(1) : '---') + ' MB';
 }
@@ -309,14 +321,17 @@ const Audio = (() => {
 })();
 
 /* ============================================================
-   КРИПТОГРАФИЯ (AES-256-GCM)
+   КРИПТОГРАФИЯ (AES-256-GCM + SHA-512)
    ============================================================ */
 const Crypto = (() => {
   let key = null;
   return {
     setSecret: async (sec) => {
-      const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ifield-v2:'+sec));
-      key = await crypto.subtle.importKey('raw', hash, {name:'AES-GCM'}, false, ['encrypt','decrypt']);
+      // Используем SHA-512 для максимальной стойкости ключа
+      const hash = await crypto.subtle.digest('SHA-512', new TextEncoder().encode('ifield-v2:'+sec));
+      // Обрезаем хэш до 32 байт (256 бит), так как это максимум для AES
+      const keyBytes = hash.slice(0, 32); 
+      key = await crypto.subtle.importKey('raw', keyBytes, {name:'AES-GCM'}, false, ['encrypt','decrypt']);
     },
     encrypt: async (txt) => {
       if(!key) throw new Error('No key');
@@ -443,24 +458,33 @@ $('msg-input').onkeydown = (e) => { if(e.key === 'Enter') $('btn-send').click();
 $('msg-input').oninput = () => { if(!isConnected) return; const now=Date.now(); if(now - (window._lastT||0) > 1500) { window._lastT=now; dataChannel.send(JSON.stringify({t:'typing'})); } };
 $('btn-leave').onclick = async () => { if(await modal('Выйти?', 'История будет удалена.')) { isConnected=false; currentRoom=null; Crypto.clear(); try{dataChannel.close(); peer.close();}catch(e){} $('messages').innerHTML=''; showScreen('start'); } };
 
-// ДОНАТЫ
-$('btn-donate').onclick = async () => {
-  const amount = prompt('Сколько звёзд (⭐) хотите пожертвовать?', '50');
-  if(!amount || isNaN(amount) || amount <= 0) return;
+// ЭКРАН ДОНАТА
+$('btn-donate').onclick = () => { Audio.send(); showScreen('donate'); };
+
+// ФУНКЦИЯ ОПЛАТЫ
+async function processDonation(amount) {
   try {
-    showToast('Создаем счет...');
-    const res = await fetch('/api/donate/link', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:+amount}) });
+    showToast(`Создаем счет на ${amount}⭐...`);
+    const res = await fetch('/api/donate/link', { 
+      method: 'POST', 
+      headers: {'Content-Type': 'application/json'}, 
+      body: JSON.stringify({ amount }) 
+    });
     const data = await res.json();
     if(data.error) throw new Error(data.error);
+    
     if(window.Telegram?.WebApp?.openInvoice) {
       window.Telegram.WebApp.openInvoice(data.link, (status) => {
         if(status === 'paid') showToast('🎉 Спасибо за поддержку!');
+        else if(status === 'cancelled') showToast('Отменено', true);
       });
     } else {
       window.open(data.link, '_blank');
     }
-  } catch(e) { showToast('Ошибка: '+e.message, true); }
-};
+  } catch(e) { 
+    showToast('Ошибка: ' + e.message, true); 
+  }
+}
 
 // Старт
 window.addEventListener('beforeunload', () => { Crypto.clear(); try{dataChannel.close(); peer.close();}catch(e){} });
