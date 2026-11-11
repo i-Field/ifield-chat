@@ -24,7 +24,7 @@ export default {
 
     try {
       // ========================================================
-      // 🤖 БЕЗОПАСНАЯ НАСТРОЙКА БОТА (Без ввода токена в браузере)
+      // 🤖 БЕЗОПАСНАЯ НАСТРОЙКА БОТА
       // ========================================================
       if (url.pathname === '/api/setup/webhook' && request.method === 'GET') {
         if (!env.BOT_TOKEN) return json({ error: 'BOT_TOKEN не задан в Cloudflare' }, 500, cors);
@@ -34,7 +34,7 @@ export default {
       }
 
       // ========================================================
-      // 🤖 ВЕБХУК TELEGRAM (Обработка команд и оплат)
+      // 🤖 ВЕБХУК TELEGRAM
       // ========================================================
       if (url.pathname === '/webhook' && request.method === 'POST') {
         return handleTelegramWebhook(request, env);
@@ -117,9 +117,6 @@ export default {
   }
 };
 
-// ========================================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-// ========================================================
 function json(data, status, cors) {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...cors } });
 }
@@ -132,9 +129,6 @@ function generateCode() {
   return code;
 }
 
-// ========================================================
-// ОБРАБОТКА БОТА (КОМАНДЫ И ПЛАТЕЖИ)
-// ========================================================
 async function handleTelegramWebhook(request, env) {
   const update = await request.json();
   const token = env.BOT_TOKEN;
@@ -144,10 +138,9 @@ async function handleTelegramWebhook(request, env) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
 
-  // 1. Команда /start
   if (update.message && update.message.text === '/start') {
     const chatId = update.message.chat.id;
-    const appUrl = 'https://ifield-chat.qx420.workers.dev/'; 
+    const appUrl = 'https://ifield-chat.qx420.workers.dev/'; // Твой домен
     
     await callTg('sendMessage', {
       chat_id: chatId,
@@ -160,12 +153,10 @@ async function handleTelegramWebhook(request, env) {
     });
   }
 
-  // 2. Подтверждение перед оплатой (Telegram требует за 10 сек)
   if (update.pre_checkout_query) {
     await callTg('answerPreCheckoutQuery', { pre_checkout_query_id: update.pre_checkout_query.id, ok: true });
   }
 
-  // 3. Успешная оплата (Донат)
   if (update.message && update.message.successful_payment) {
     const pay = update.message.successful_payment;
     await env.IFIELD_CRYPTO_KV.put(`donate:${pay.telegram_payment_charge_id}`, pay.total_amount);
