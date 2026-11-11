@@ -1,0 +1,11 @@
+name = "ifield-chat"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "p2p_DB"
+id = "СЮДА_ВСТАВЬ_ID_ИЗ_ШАГА_1"
