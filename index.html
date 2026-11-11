@@ -8,7 +8,6 @@
 <style>
 /* ============================================================
    СЕКЦИЯ 1 — СТИЛИ
-   Всё инлайн, никаких внешних CSS / шрифтов (приватность).
    ============================================================ */
 :root {
   --green: #0f0;
@@ -124,7 +123,6 @@ input, textarea, .selectable {
   font-weight: 400;
   margin-top: 3px;
 }
-
 .privacy-note {
   position: absolute;
   bottom: calc(var(--safe-bottom) + 20px);
@@ -137,378 +135,127 @@ input, textarea, .selectable {
 }
 
 /* ---------- Экран хоста ---------- */
-#screen-host {
-  align-items: stretch;
-}
+#screen-host { align-items: stretch; }
 .section-title {
-  font-size: 12px;
-  opacity: 0.6;
-  letter-spacing: 2px;
-  margin: 16px 0 8px;
-  text-transform: uppercase;
+  font-size: 12px; opacity: 0.6; letter-spacing: 2px;
+  margin: 16px 0 8px; text-transform: uppercase;
 }
 .code-box {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  font-family: "SF Mono", monospace;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-align: center;
-  color: var(--green);
-  text-shadow: 0 0 10px var(--green);
-  word-break: break-all;
-  user-select: all;
-  -webkit-user-select: all;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  font-family: "SF Mono", monospace; font-size: 22px; font-weight: 700;
+  letter-spacing: 3px; text-align: center; color: var(--green);
+  text-shadow: 0 0 10px var(--green); word-break: break-all;
+  user-select: all; -webkit-user-select: all;
 }
 .code-box.secret {
-  font-size: 14px;
-  letter-spacing: 1px;
-  color: var(--warn);
-  text-shadow: 0 0 10px var(--warn);
+  font-size: 14px; letter-spacing: 1px;
+  color: var(--warn); text-shadow: 0 0 10px var(--warn);
 }
-.row-btns {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.row-btns .big-btn {
-  flex: 1;
-  margin: 0;
-  padding: 12px;
-  font-size: 13px;
-}
+.row-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+.row-btns .big-btn { flex: 1; margin: 0; padding: 12px; font-size: 13px; }
 .status-line {
-  text-align: center;
-  font-size: 13px;
-  padding: 12px;
-  border-radius: 10px;
-  background: rgba(0, 30, 0, 0.6);
-  border: 1px solid var(--border);
-  margin-top: 12px;
+  text-align: center; font-size: 13px; padding: 12px;
+  border-radius: 10px; background: rgba(0, 30, 0, 0.6);
+  border: 1px solid var(--border); margin-top: 12px;
 }
 .status-line.waiting::after {
-  content: '';
-  display: inline-block;
+  content: ''; display: inline-block;
   animation: dots 1.5s steps(4, end) infinite;
 }
-@keyframes dots {
-  0% { content: ''; }
-  25% { content: '.'; }
-  50% { content: '..'; }
-  75% { content: '...'; }
-}
+@keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
 .spinner {
-  display: inline-block;
-  width: 12px; height: 12px;
-  border: 2px solid var(--green-dim);
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 8px;
-  vertical-align: middle;
+  display: inline-block; width: 12px; height: 12px;
+  border: 2px solid var(--green-dim); border-top-color: var(--green);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin-right: 8px; vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------- Экран гостя ---------- */
-#screen-guest {
-  align-items: stretch;
-}
+#screen-guest { align-items: stretch; }
 .input-field {
-  width: 100%;
-  padding: 14px 16px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--green);
-  font-family: "SF Mono", monospace;
-  font-size: 16px;
-  letter-spacing: 2px;
-  margin-bottom: 12px;
-  outline: none;
-  text-align: center;
+  width: 100%; padding: 14px 16px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 12px;
+  color: var(--green); font-family: "SF Mono", monospace;
+  font-size: 16px; letter-spacing: 2px; margin-bottom: 12px;
+  outline: none; text-align: center;
 }
-.input-field:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
-}
-.input-field::placeholder {
-  color: rgba(0, 255, 0, 0.3);
-  letter-spacing: 1px;
-}
+.input-field:focus { border-color: var(--green); box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); }
+.input-field::placeholder { color: rgba(0, 255, 0, 0.3); letter-spacing: 1px; }
 
 /* ---------- Экран чата ---------- */
-#screen-chat {
-  padding: 0;
-  display: none;
-  flex-direction: column;
-}
+#screen-chat { padding: 0; display: none; flex-direction: column; }
 #screen-chat.active { display: flex; }
-
 .chat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: calc(var(--safe-top) + 10px) 16px 10px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
+  background: var(--panel); border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
-.chat-header .title-small {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-.chat-header .status {
-  font-size: 11px;
-  opacity: 0.7;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.dot-online {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
-  animation: blink 2s ease-in-out infinite;
-}
-.dot-offline {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--danger);
-}
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-.header-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--green);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-family: inherit;
-  cursor: pointer;
-}
+.chat-header .title-small { font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+.chat-header .status { font-size: 11px; opacity: 0.7; display: flex; align-items: center; gap: 6px; }
+.dot-online { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s ease-in-out infinite; }
+.dot-offline { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.header-btn { background: transparent; border: 1px solid var(--border); color: var(--green); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; cursor: pointer; }
 .header-btn:active { background: rgba(0, 255, 0, 0.15); }
-
 .messages {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 12px 12px 4px;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  user-select: text;
-  -webkit-user-select: text;
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 12px 12px 4px; -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth; user-select: text; -webkit-user-select: text;
 }
 .msg {
-  max-width: 82%;
-  margin-bottom: 8px;
-  padding: 10px 14px;
-  border-radius: 16px;
-  font-size: 15px;
-  line-height: 1.35;
-  word-wrap: break-word;
-  word-break: break-word;
-  animation: msgIn 0.2s ease-out;
-  user-select: text;
-  -webkit-user-select: text;
+  max-width: 82%; margin-bottom: 8px; padding: 10px 14px;
+  border-radius: 16px; font-size: 15px; line-height: 1.35;
+  word-wrap: break-word; word-break: break-word;
+  animation: msgIn 0.2s ease-out; user-select: text; -webkit-user-select: text;
 }
-@keyframes msgIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.msg.me {
-  margin-left: auto;
-  background: rgba(0, 255, 0, 0.18);
-  border: 1px solid rgba(0, 255, 0, 0.3);
-  border-bottom-right-radius: 4px;
-}
-.msg.partner {
-  margin-right: auto;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom-left-radius: 4px;
-  color: #d0ffd0;
-}
-.msg.system {
-  margin: 12px auto;
-  text-align: center;
-  max-width: 90%;
-  background: transparent;
-  color: var(--warn);
-  font-size: 11px;
-  opacity: 0.8;
-  letter-spacing: 0.5px;
-  padding: 4px 8px;
-}
-.msg .meta {
-  display: block;
-  font-size: 9px;
-  opacity: 0.5;
-  margin-top: 4px;
-  letter-spacing: 0.5px;
-}
-.typing {
-  font-size: 11px;
-  opacity: 0.6;
-  padding: 4px 16px;
-  height: 20px;
-  font-style: italic;
-}
-
-.input-bar {
-  display: flex;
-  gap: 8px;
-  padding: 10px 12px calc(var(--safe-bottom) + 10px);
-  background: var(--panel);
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.input-bar input {
-  flex: 1;
-  padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--green);
-  font-family: inherit;
-  font-size: 15px;
-  outline: none;
-}
-.input-bar input:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 12px rgba(0, 255, 0, 0.2);
-}
+@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.msg.me { margin-left: auto; background: rgba(0, 255, 0, 0.18); border: 1px solid rgba(0, 255, 0, 0.3); border-bottom-right-radius: 4px; }
+.msg.partner { margin-right: auto; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-bottom-left-radius: 4px; color: #d0ffd0; }
+.msg.system { margin: 12px auto; text-align: center; max-width: 90%; background: transparent; color: var(--warn); font-size: 11px; opacity: 0.8; letter-spacing: 0.5px; padding: 4px 8px; }
+.msg .meta { display: block; font-size: 9px; opacity: 0.5; margin-top: 4px; letter-spacing: 0.5px; }
+.typing { font-size: 11px; opacity: 0.6; padding: 4px 16px; height: 20px; font-style: italic; }
+.input-bar { display: flex; gap: 8px; padding: 10px 12px calc(var(--safe-bottom) + 10px); background: var(--panel); border-top: 1px solid var(--border); flex-shrink: 0; }
+.input-bar input { flex: 1; padding: 12px 14px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--border); border-radius: 12px; color: var(--green); font-family: inherit; font-size: 15px; outline: none; }
+.input-bar input:focus { border-color: var(--green); box-shadow: 0 0 12px rgba(0, 255, 0, 0.2); }
 .input-bar input::placeholder { color: rgba(0, 255, 0, 0.3); }
-.send-btn {
-  padding: 12px 18px;
-  background: rgba(0, 255, 0, 0.2);
-  border: 1px solid var(--green);
-  border-radius: 12px;
-  color: var(--green);
-  font-family: inherit;
-  font-size: 20px;
-  cursor: pointer;
-  min-width: 56px;
-}
+.send-btn { padding: 12px 18px; background: rgba(0, 255, 0, 0.2); border: 1px solid var(--green); border-radius: 12px; color: var(--green); font-family: inherit; font-size: 20px; cursor: pointer; min-width: 56px; }
 .send-btn:active { background: rgba(0, 255, 0, 0.4); }
 .send-btn:disabled { opacity: 0.4; }
 
-/* ---------- Экран ошибки / отключения ---------- */
-#screen-error {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-.err-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 0 15px var(--danger));
-}
-.err-msg {
-  font-size: 15px;
-  opacity: 0.85;
-  max-width: 340px;
-  line-height: 1.5;
-  margin-bottom: 24px;
-}
+/* ---------- Экран ошибки ---------- */
+#screen-error { align-items: center; justify-content: center; text-align: center; }
+.err-icon { font-size: 64px; margin-bottom: 16px; filter: drop-shadow(0 0 15px var(--danger)); }
+.err-msg { font-size: 15px; opacity: 0.85; max-width: 340px; line-height: 1.5; margin-bottom: 24px; }
 
-/* ---------- Статус-бар внизу ---------- */
-.status-bar {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: rgba(0, 0, 0, 0.9);
-  border-top: 1px solid var(--border);
-  padding: 4px 10px calc(var(--safe-bottom) + 4px);
-  font-size: 10px;
-  opacity: 0.55;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 6px;
-  z-index: 20;
-  font-family: "SF Mono", monospace;
-  pointer-events: none;
-}
+/* ---------- Статус-бар ---------- */
+.status-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.9); border-top: 1px solid var(--border); padding: 4px 10px calc(var(--safe-bottom) + 4px); font-size: 10px; opacity: 0.55; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; z-index: 20; font-family: "SF Mono", monospace; pointer-events: none; }
 .status-bar span { white-space: nowrap; }
 
-/* ---------- Тост-уведомление ---------- */
-.toast {
-  position: fixed;
-  top: calc(var(--safe-top) + 16px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-100px);
-  background: rgba(0, 30, 0, 0.95);
-  border: 1px solid var(--green);
-  color: var(--green);
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-size: 13px;
-  z-index: 100;
-  transition: transform 0.3s ease;
-  box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
-  pointer-events: none;
-  max-width: 90vw;
-  text-align: center;
-}
+/* ---------- Тост ---------- */
+.toast { position: fixed; top: calc(var(--safe-top) + 16px); left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(0, 30, 0, 0.95); border: 1px solid var(--green); color: var(--green); padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 100; transition: transform 0.3s ease; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); pointer-events: none; max-width: 90vw; text-align: center; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 .toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255, 50, 50, 0.3); }
 
-/* ---------- Модалка подтверждения ---------- */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  padding: 24px;
-}
+/* ---------- Модалка ---------- */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
 .modal-overlay.active { display: flex; }
-.modal {
-  background: #001500;
-  border: 1px solid var(--green);
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 340px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 0 60px rgba(0, 255, 0, 0.2);
-}
-.modal-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-.modal-text {
-  font-size: 13px;
-  opacity: 0.75;
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-.modal-btns {
-  display: flex;
-  gap: 8px;
-}
+.modal { background: #001500; border: 1px solid var(--green); border-radius: 16px; padding: 24px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 0 60px rgba(0, 255, 0, 0.2); }
+.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+.modal-text { font-size: 13px; opacity: 0.75; line-height: 1.5; margin-bottom: 20px; }
+.modal-btns { display: flex; gap: 8px; }
 .modal-btns .big-btn { margin: 0; padding: 12px; font-size: 14px; }
 
-/* ---------- Прочее ---------- */
+/* ---------- Диагностика (Логи на экране) ---------- */
+#debug-log { position: fixed; bottom: calc(var(--safe-bottom) + 30px); left: 10px; right: 10px; max-height: 150px; overflow-y: auto; background: rgba(20, 0, 0, 0.95); border: 1px solid var(--danger); border-radius: 8px; padding: 8px; font-size: 11px; color: #faa; font-family: monospace; z-index: 999; display: none; white-space: pre-wrap; pointer-events: auto; }
+#debug-log.active { display: block; }
+#debug-toggle { position: fixed; top: calc(var(--safe-top) + 10px); right: 10px; background: rgba(255, 0, 0, 0.2); color: var(--danger); border: 1px solid var(--danger); border-radius: 50%; width: 30px; height: 30px; font-size: 16px; z-index: 1000; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.6; }
 .hidden { display: none !important; }
-.selectable { user-select: text !important; -webkit-user-select: text !important; }
 </style>
 </head>
 <body>
-
-<!-- ============================================================
-     СЕКЦИЯ 2 — HTML РАЗМЕТКА
-     ============================================================ -->
 
 <canvas id="matrixCanvas"></canvas>
 
@@ -517,42 +264,23 @@ input, textarea, .selectable {
   <div class="logo">🔐</div>
   <div class="title">iField</div>
   <div class="subtitle">P2P · E2E · БЕЗ СЕРВЕРОВ</div>
-
-  <button id="btn-create" class="big-btn primary">
-    🆕 Создать комнату
-    <span class="sub">Получишь код и ключ для друга</span>
-  </button>
-
-  <button id="btn-join" class="big-btn">
-    🔑 Войти по коду
-    <span class="sub">Есть код и ключ от друга?</span>
-  </button>
-
-  <div class="privacy-note">
-    Никаких аккаунтов. Никаких логов. Никакой истории.<br>
-    Всё живёт только в этой вкладке — закрыл, значит стёр.
-  </div>
+  <button id="btn-create" class="big-btn primary">🆕 Создать комнату<span class="sub">Получишь код и ключ для друга</span></button>
+  <button id="btn-join" class="big-btn">🔑 Войти по коду<span class="sub">Есть код и ключ от друга?</span></button>
+  <div class="privacy-note">Никаких аккаунтов. Никаких логов. Никакой истории.<br>Всё живёт только в этой вкладке — закрыл, значит стёр.</div>
 </div>
 
 <!-- ЭКРАН 2: Хост -->
 <div id="screen-host" class="screen">
   <div class="section-title">📋 Передай другу</div>
   <div class="code-box" id="host-code" title="Код комнаты">...</div>
-
   <div class="section-title">🔐 Секретный ключ (для шифрования)</div>
   <div class="code-box secret" id="host-secret" title="Секретный ключ">...</div>
-
   <div class="row-btns">
     <button class="big-btn" id="btn-share">📤 Поделиться</button>
     <button class="big-btn" id="btn-copy">📋 Копировать</button>
   </div>
-
-  <div class="status-line waiting" id="host-status">
-    <span class="spinner"></span>Ожидание гостя
-  </div>
-
+  <div class="status-line waiting" id="host-status"><span class="spinner"></span>Ожидание гостя</div>
   <div style="flex:1"></div>
-
   <button class="big-btn" id="btn-host-cancel">← Отмена</button>
 </div>
 
@@ -560,16 +288,10 @@ input, textarea, .selectable {
 <div id="screen-guest" class="screen">
   <div class="section-title">🔑 Код комнаты</div>
   <input type="text" id="guest-code" class="input-field" placeholder="6 символов" maxlength="6" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false">
-
   <div class="section-title">🔐 Секретный ключ</div>
   <input type="text" id="guest-secret" class="input-field" placeholder="вставь ключ" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="letter-spacing:1px;font-size:14px;">
-
-  <button class="big-btn primary" id="btn-guest-connect" style="margin-top:16px;">
-    ⚡ Подключиться
-  </button>
-
+  <button class="big-btn primary" id="btn-guest-connect" style="margin-top:16px;">⚡ Подключиться</button>
   <div style="flex:1"></div>
-
   <button class="big-btn" id="btn-guest-back">← Назад</button>
 </div>
 
@@ -578,15 +300,10 @@ input, textarea, .selectable {
   <div class="chat-header">
     <button class="header-btn" id="btn-leave">✕</button>
     <div class="title-small">🔐 ЗАЩИЩЁННЫЙ КАНАЛ</div>
-    <div class="status">
-      <span class="dot-offline" id="chat-dot"></span>
-      <span id="chat-status">соединение...</span>
-    </div>
+    <div class="status"><span class="dot-offline" id="chat-dot"></span><span id="chat-status">соединение...</span></div>
   </div>
-
   <div class="messages" id="messages"></div>
   <div class="typing" id="typing-indicator"></div>
-
   <div class="input-bar">
     <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
     <button class="send-btn" id="btn-send">➤</button>
@@ -600,10 +317,8 @@ input, textarea, .selectable {
   <button class="big-btn" id="btn-error-back">← На главную</button>
 </div>
 
-<!-- Тост -->
 <div class="toast" id="toast"></div>
 
-<!-- Модалка -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-title" id="modal-title">Подтверждение</div>
@@ -615,36 +330,28 @@ input, textarea, .selectable {
   </div>
 </div>
 
-<!-- Статус-бар -->
 <div class="status-bar">
   <span id="sb-enc">🔐 AES-256-GCM</span>
   <span id="sb-datach">📡 —</span>
   <span id="sb-time">--:--:--</span>
 </div>
 
+<!-- Отладка -->
+<div id="debug-toggle">🐞</div>
+<div id="debug-log"></div>
+
 <script>
 /* ============================================================
-   СЕКЦИЯ 3 — КОНФИГ И УТИЛИТЫ
+   СЕКЦИЯ 3 — КОНФИГ И УТИЛИТЫ (+ ДИАГНОСТИКА)
    ============================================================ */
-
 const CONFIG = {
-  // STUN-серверы. Отключи (поставь []) для максимальной приватности,
-  // но тогда чат будет работать только в одной Wi-Fi сети.
-  stunServers: [
-    'stun:stun.l.google.com:19302',
-    'stun:stun.cloudflare.com:3478',
-  ],
-  // Таймаут ожидания ICE (сборки всех кандидатов) в мс
+  stunServers: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'],
   iceTimeout: 8000,
-  // Периодичность опроса answer для хоста (мс)
   answerPollInterval: 1500,
-  // Сколько ждём ответа гостя максимум (мс) - 5 минут = TTL комнаты
   answerTimeout: 300000,
-  // Размер чанка при base64-кодировании (Safari не любит большой spread)
   chunkSize: 0x8000,
 };
 
-// Экраны
 const screens = {
   start: document.getElementById('screen-start'),
   host: document.getElementById('screen-host'),
@@ -658,780 +365,191 @@ function showScreen(name) {
   if (screens[name]) screens[name].classList.add('active');
 }
 
-// Простые утилиты
+// Диагностика
+const debugLogEl = document.getElementById('debug-log');
+const debugToggle = document.getElementById('debug-toggle');
+let debugVisible = false;
+debugToggle.addEventListener('click', () => { debugVisible = !debugVisible; debugLogEl.classList.toggle('active', debugVisible); });
+function logToScreen(msg, isError = false) {
+  const time = new Date().toLocaleTimeString('ru-RU');
+  const color = isError ? '#f33' : '#0f0';
+  debugLogEl.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
+  debugLogEl.scrollTop = debugLogEl.scrollHeight;
+  if (isError && !debugVisible) { debugVisible = true; debugLogEl.classList.add('active'); }
+  console.log(isError ? '❌' : '✅', msg);
+}
+window.onerror = function(msg, url, line, col, error) { logToScreen(`JS CRASH: ${msg} (line ${line})`, true); };
+window.addEventListener('unhandledrejection', function(event) { logToScreen(`UNHANDLED: ${event.reason}`, true); });
+
 const $ = id => document.getElementById(id);
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+function base64Encode(bytes) { let bin = ''; const chunk = CONFIG.chunkSize; for (let i = 0; i < bytes.length; i += chunk) { bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk)); } return btoa(bin); }
+function base64Decode(str) { const bin = atob(str); const bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return bytes; }
+function randomBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
+function generateRoomCode() { const chars = 'abcdefghjkmnpqrstuvwxyz23456789'; const b = randomBytes(6); let s = ''; for (let i = 0; i < 6; i++) s += chars[b[i] % chars.length]; return s; }
+function generateSecret() { const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'; const b = randomBytes(32); let s = ''; for (let i = 0; i < 32; i++) s += chars[b[i] % chars.length]; return s; }
 
-function base64Encode(bytes) {
-  let bin = '';
-  const chunk = CONFIG.chunkSize;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-  }
-  return btoa(bin);
-}
-function base64Decode(str) {
-  const bin = atob(str);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return bytes;
-}
-
-function randomBytes(n) {
-  return crypto.getRandomValues(new Uint8Array(n));
-}
-
-// Генерация кода комнаты (6 символов, без похожих)
-function generateRoomCode() {
-  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
-  const b = randomBytes(6);
-  let s = '';
-  for (let i = 0; i < 6; i++) s += chars[b[i] % chars.length];
-  return s;
-}
-
-// Генерация секрета (32 символа, ~160 бит энтропии)
-function generateSecret() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  const b = randomBytes(32);
-  let s = '';
-  for (let i = 0; i < 32; i++) s += chars[b[i] % chars.length];
-  return s;
-}
-
-// Тост-уведомление
 let toastTimer = null;
-function showToast(text, isError = false) {
-  const el = $('toast');
-  el.textContent = text;
-  el.className = 'toast show' + (isError ? ' error' : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    el.className = 'toast' + (isError ? ' error' : '');
-  }, 2500);
-}
-
-// Модалка подтверждения
-function confirmModal(title, text) {
-  return new Promise(resolve => {
-    $('modal-title').textContent = title;
-    $('modal-text').textContent = text;
-    $('modal').classList.add('active');
-    const cleanup = (val) => {
-      $('modal').classList.remove('active');
-      $('modal-yes').onclick = null;
-      $('modal-no').onclick = null;
-      resolve(val);
-    };
-    $('modal-yes').onclick = () => cleanup(true);
-    $('modal-no').onclick = () => cleanup(false);
-  });
-}
+function showToast(text, isError = false) { const el = $('toast'); el.textContent = text; el.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.className = 'toast' + (isError ? ' error' : ''); }, 2500); }
+function confirmModal(title, text) { return new Promise(resolve => { $('modal-title').textContent = title; $('modal-text').textContent = text; $('modal').classList.add('active'); const cleanup = (val) => { $('modal').classList.remove('active'); $('modal-yes').onclick = null; $('modal-no').onclick = null; resolve(val); }; $('modal-yes').onclick = () => cleanup(true); $('modal-no').onclick = () => cleanup(false); }); }
 
 /* ============================================================
-   СЕКЦИЯ 4 — МАТРИЦА (фон)
-   Лёгкая, чтобы не жрать батарею.
+   СЕКЦИЯ 4 — МАТРИЦА
    ============================================================ */
-
 (function matrixInit() {
-  const canvas = $('matrixCanvas');
-  const ctx = canvas.getContext('2d', { alpha: true });
-  let w, h, cols, ypos;
-
-  function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-    cols = Math.floor(w / 22) + 1;
-    ypos = Array(cols).fill(0).map(() => Math.floor(Math.random() * -50));
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const chars = 'アイウエオカキクケコサシスセソタチツテト0123456789';
-  let running = true;
-
-  function loop() {
-    if (!running) return;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
-    ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = '#0f0';
-    ctx.font = '16px monospace';
-    for (let i = 0; i < cols; i++) {
-      const ch = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(ch, i * 22, ypos[i] * 20);
-      if (ypos[i] * 20 > h && Math.random() > 0.97) ypos[i] = 0;
-      ypos[i]++;
-    }
-  }
-  setInterval(loop, 70);
-
-  // Останавливаем, когда вкладка не видна (экономия батареи)
-  document.addEventListener('visibilitychange', () => {
-    running = !document.hidden;
-  });
+  const canvas = $('matrixCanvas'); const ctx = canvas.getContext('2d', { alpha: true }); let w, h, cols, ypos;
+  function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; cols = Math.floor(w / 22) + 1; ypos = Array(cols).fill(0).map(() => Math.floor(Math.random() * -50)); }
+  resize(); window.addEventListener('resize', resize);
+  const chars = 'アイウエオカキクケコサシスセソタチツテト0123456789'; let running = true;
+  function loop() { if (!running) return; ctx.fillStyle = 'rgba(0, 0, 0, 0.06)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#0f0'; ctx.font = '16px monospace'; for (let i = 0; i < cols; i++) { const ch = chars[Math.floor(Math.random() * chars.length)]; ctx.fillText(ch, i * 22, ypos[i] * 20); if (ypos[i] * 20 > h && Math.random() > 0.97) ypos[i] = 0; ypos[i]++; } }
+  setInterval(loop, 70); document.addEventListener('visibilitychange', () => { running = !document.hidden; });
 })();
 
 /* ============================================================
-   СЕКЦИЯ 5 — АУДИО (WebAudio, без файлов)
+   СЕКЦИЯ 5 — АУДИО
    ============================================================ */
-
 const Audio = (() => {
   let ctx = null;
-  function ensure() {
-    if (!ctx) {
-      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
-    }
-    if (ctx && ctx.state === 'suspended') ctx.resume();
-    return ctx;
-  }
-  function tone(freq, dur = 0.08, type = 'sine', vol = 0.15) {
-    const c = ensure();
-    if (!c) return;
-    const osc = c.createOscillator();
-    const gain = c.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(vol, c.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
-    osc.connect(gain);
-    gain.connect(c.destination);
-    osc.start(c.currentTime);
-    osc.stop(c.currentTime + dur);
-  }
-  return {
-    send() { tone(880, 0.06, 'sine', 0.12); },
-    receive() { tone(660, 0.08, 'sine', 0.12); setTimeout(() => tone(880, 0.06, 'sine', 0.1), 60); },
-    connect() { tone(440, 0.1); setTimeout(() => tone(660, 0.1), 90); setTimeout(() => tone(880, 0.15), 180); },
-    error() { tone(220, 0.15, 'sawtooth', 0.15); },
-    tap() { tone(1200, 0.02, 'square', 0.06); },
-  };
+  function ensure() { if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ctx && ctx.state === 'suspended') ctx.resume(); return ctx; }
+  function tone(freq, dur = 0.08, type = 'sine', vol = 0.15) { const c = ensure(); if (!c) return; const osc = c.createOscillator(); const gain = c.createGain(); osc.type = type; osc.frequency.value = freq; gain.gain.setValueAtTime(vol, c.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur); osc.connect(gain); gain.connect(c.destination); osc.start(c.currentTime); osc.stop(c.currentTime + dur); }
+  return { send() { tone(880, 0.06, 'sine', 0.12); }, receive() { tone(660, 0.08, 'sine', 0.12); setTimeout(() => tone(880, 0.06, 'sine', 0.1), 60); }, connect() { tone(440, 0.1); setTimeout(() => tone(660, 0.1), 90); setTimeout(() => tone(880, 0.15), 180); }, error() { tone(220, 0.15, 'sawtooth', 0.15); }, tap() { tone(1200, 0.02, 'square', 0.06); } };
 })();
 
 /* ============================================================
-   СЕКЦИЯ 6 — HAPTIC + TELEGRAM
+   СЕКЦИЯ 6 — TELEGRAM
    ============================================================ */
-
-const Haptic = {
-  tap() {
-    try {
-      if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-      } else if (navigator.vibrate) {
-        navigator.vibrate(8);
-      }
-    } catch (e) {}
-  },
-  success() {
-    try {
-      if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-      } else if (navigator.vibrate) {
-        navigator.vibrate([10, 30, 10]);
-      }
-    } catch (e) {}
-  },
-  error() {
-    try {
-      if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-      } else if (navigator.vibrate) {
-        navigator.vibrate(100);
-      }
-    } catch (e) {}
-  },
-};
-
-// Инициализация Telegram (если запущены в TMA)
 let tg = null;
-function initTelegram() {
-  try {
-    tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      tg.setHeaderColor?.('#000000');
-      tg.setBackgroundColor?.('#000000');
-      if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
-    }
-  } catch (e) {}
-}
-
-// Поделиться текстом (в Telegram или через системный share)
-async function shareText(text) {
-  Haptic.tap();
-  // Если в TMA — через Telegram
-  if (tg && tg.switchInlineQuery) {
-    // Просто копируем в буфер + подсказка
-  }
-  // Web Share API (iOS Safari поддерживает)
-  try {
-    if (navigator.share) {
-      await navigator.share({ text });
-      showToast('Отправлено');
-      return true;
-    }
-  } catch (e) {
-    if (e.name === 'AbortError') return false;
-  }
-  // Fallback — копировать
-  return await copyText(text);
-}
-
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast('📋 Скопировано');
-    Haptic.success();
-    return true;
-  } catch (e) {
-    showToast('Не удалось скопировать', true);
-    return false;
-  }
-}
+function initTelegram() { try { tg = window.Telegram?.WebApp; if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor?.('#000000'); tg.setBackgroundColor?.('#000000'); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } } catch (e) {} }
+async function shareText(text) { if (navigator.share) { try { await navigator.share({ text }); showToast('Отправлено'); return true; } catch (e) { if (e.name === 'AbortError') return false; } } return await copyText(text); }
+async function copyText(text) { try { await navigator.clipboard.writeText(text); showToast('📋 Скопировано'); return true; } catch (e) { showToast('Не удалось скопировать', true); return false; } }
 
 /* ============================================================
-   СЕКЦИЯ 7 — КРИПТОГРАФИЯ (AES-256-GCM)
-   Ключ = SHA-256(secret). Никогда не покидает вкладку.
+   СЕКЦИЯ 7 — КРИПТОГРАФИЯ
    ============================================================ */
-
 const Crypto = (() => {
   let cryptoKey = null;
-
-  async function setSecret(secret) {
-    // Деривация ключа из секрета
-    const data = new TextEncoder().encode('ifield-v1:' + secret);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    cryptoKey = await crypto.subtle.importKey(
-      'raw', hash,
-      { name: 'AES-GCM' },
-      false,
-      ['encrypt', 'decrypt']
-    );
-  }
-
-  async function encrypt(plaintext) {
-    if (!cryptoKey) throw new Error('no key');
-    const iv = randomBytes(12);
-    const enc = new TextEncoder().encode(plaintext);
-    const cipher = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      cryptoKey,
-      enc
-    );
-    const out = new Uint8Array(12 + cipher.byteLength);
-    out.set(iv, 0);
-    out.set(new Uint8Array(cipher), 12);
-    return base64Encode(out);
-  }
-
-  async function decrypt(b64) {
-    if (!cryptoKey) throw new Error('no key');
-    const bytes = base64Decode(b64);
-    const iv = bytes.subarray(0, 12);
-    const cipher = bytes.subarray(12);
-    const plain = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      cryptoKey,
-      cipher
-    );
-    return new TextDecoder().decode(plain);
-  }
-
+  async function setSecret(secret) { const data = new TextEncoder().encode('ifield-v1:' + secret); const hash = await crypto.subtle.digest('SHA-256', data); cryptoKey = await crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']); }
+  async function encrypt(plaintext) { if (!cryptoKey) throw new Error('no key'); const iv = randomBytes(12); const enc = new TextEncoder().encode(plaintext); const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, enc); const out = new Uint8Array(12 + cipher.byteLength); out.set(iv, 0); out.set(new Uint8Array(cipher), 12); return base64Encode(out); }
+  async function decrypt(b64) { if (!cryptoKey) throw new Error('no key'); const bytes = base64Decode(b64); const iv = bytes.subarray(0, 12); const cipher = bytes.subarray(12); const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, cipher); return new TextDecoder().decode(plain); }
   function clear() { cryptoKey = null; }
-
   return { setSecret, encrypt, decrypt, clear };
 })();
 
 /* ============================================================
-   СЕКЦИЯ 8 — WEBRTC + SIGNALING
+   СЕКЦИЯ 8 — WEBRTC + SIGNALING (+ ЛОГИ)
    ============================================================ */
+const SIGNALING_BASE = '';
+let peer = null; let dataChannel = null; let currentRoom = null; let answerPollTimer = null; let isConnected = false; let partnerTypingTimer = null;
 
-const SIGNALING_BASE = ''; // тот же домен, что и Worker (пусто = относительный URL)
-
-// Структура состояния соединения
-let peer = null;          // RTCPeerConnection
-let dataChannel = null;   // RTCDataChannel
-let currentRoom = null;   // { code, secret, role: 'host'|'guest' }
-let answerPollTimer = null;
-let answerTimeoutTimer = null;
-let isConnected = false;
-let partnerTypingTimer = null;
-
-// HTTP-хелпер для сигналинга
 async function signaling(path, method = 'GET', body = null) {
-  const url = SIGNALING_BASE + path;
-  const opts = {
-    method,
-    headers: {},
-  };
-  if (body !== null) {
-    opts.body = body;
-    opts.headers['Content-Type'] = 'application/json';
-  }
-  const res = await fetch(url, opts);
-  if (!res.ok) {
-    let msg = 'HTTP ' + res.status;
-    try {
-      const j = await res.json();
-      if (j.error) msg = j.error;
-    } catch (e) {}
-    throw new Error(msg);
-  }
-  return await res.json();
+  logToScreen(`API: ${method} ${path}...`);
+  const opts = { method, headers: {} };
+  if (body !== null) { opts.body = body; opts.headers['Content-Type'] = 'application/json'; }
+  try {
+    const res = await fetch(SIGNALING_BASE + path, opts);
+    if (!res.ok) { let msg = 'HTTP ' + res.status; try { const j = await res.json(); if (j.error) msg = j.error; } catch (e) {} logToScreen(`API ERROR: ${msg}`, true); throw new Error(msg); }
+    logToScreen(`API OK: ${path}`);
+    return await res.json();
+  } catch (e) { logToScreen(`NETWORK FAIL: ${e.message}`, true); throw e; }
 }
 
-// Создаём PeerConnection с заданными STUN
-function createPeerConnection() {
-  const config = {
-    iceServers: CONFIG.stunServers.map(u => ({ urls: u })),
-    iceCandidatePoolSize: 0,
-  };
-  const pc = new RTCPeerConnection(config);
-  return pc;
-}
+function createPeerConnection() { return new RTCPeerConnection({ iceServers: CONFIG.stunServers.map(u => ({ urls: u })), iceCandidatePoolSize: 0 }); }
+function waitIceComplete(pc) { return new Promise((resolve) => { if (pc.iceGatheringState === 'complete') return resolve(); const onStateChange = () => { if (pc.iceGatheringState === 'complete') { pc.removeEventListener('icegatheringstatechange', onStateChange); resolve(); } }; pc.addEventListener('icegatheringstatechange', onStateChange); setTimeout(() => { pc.removeEventListener('icegatheringstatechange', onStateChange); resolve(); }, CONFIG.iceTimeout); }); }
 
-// Ждём окончания сбора ICE-кандидатов
-function waitIceComplete(pc) {
-  return new Promise((resolve) => {
-    if (pc.iceGatheringState === 'complete') return resolve();
-    const onStateChange = () => {
-      if (pc.iceGatheringState === 'complete') {
-        pc.removeEventListener('icegatheringstatechange', onStateChange);
-        resolve();
-      }
-    };
-    pc.addEventListener('icegatheringstatechange', onStateChange);
-    setTimeout(() => {
-      pc.removeEventListener('icegatheringstatechange', onStateChange);
-      resolve();
-    }, CONFIG.iceTimeout);
-  });
-}
-
-// Общий setup data channel
 function setupDataChannel(channel) {
   dataChannel = channel;
-  dataChannel.onopen = () => {
-    isConnected = true;
-    Audio.connect();
-    Haptic.success();
-    updateChatStatus('подключено', true);
-    updateStatusBar();
-    addSystemMessage('🔐 Соединение установлено. Канал зашифрован.');
-    // Стираем комнату из KV — она больше не нужна
-    if (currentRoom) {
-      signaling(`/api/room/${currentRoom.code}/cleanup`, 'POST').catch(() => {});
-    }
-  };
-  dataChannel.onclose = () => {
-    isConnected = false;
-    updateChatStatus('отключено', false);
-    updateStatusBar();
-    addSystemMessage('⚪ Соединение закрыто.');
-  };
-  dataChannel.onerror = (err) => {
-    console.error('dc error', err);
-  };
-  dataChannel.onmessage = async (ev) => {
-    try {
-      const wrapper = JSON.parse(ev.data);
-      if (wrapper.t === 'typing') {
-        showPartnerTyping();
-        return;
-      }
-      if (wrapper.t === 'msg') {
-        const plain = await Crypto.decrypt(wrapper.d);
-        addMessage(plain, 'partner');
-        Audio.receive();
-        Haptic.tap();
-      }
-    } catch (e) {
-      // Игнорируем повреждённые пакеты
-    }
-  };
+  dataChannel.onopen = () => { isConnected = true; Audio.connect(); logToScreen('DataChannel OPEN'); updateChatStatus('подключено', true); updateStatusBar(); addSystemMessage('🔐 Соединение установлено. Канал зашифрован.'); if (currentRoom) signaling(`/api/room/${currentRoom.code}/cleanup`, 'POST').catch(() => {}); };
+  dataChannel.onclose = () => { isConnected = false; updateChatStatus('отключено', false); updateStatusBar(); addSystemMessage('⚪ Соединение закрыто.'); };
+  dataChannel.onerror = (err) => { logToScreen('DataChannel ERROR', true); };
+  dataChannel.onmessage = async (ev) => { try { const wrapper = JSON.parse(ev.data); if (wrapper.t === 'typing') { showPartnerTyping(); return; } if (wrapper.t === 'msg') { const plain = await Crypto.decrypt(wrapper.d); addMessage(plain, 'partner'); Audio.receive(); } } catch (e) { logToScreen('MSG DECRYPT FAIL', true); } };
 }
 
-// ХОСТ: создать оффер и залить в KV
 async function hostStart() {
-  currentRoom = {
-    code: generateRoomCode(),
-    secret: generateSecret(),
-    role: 'host',
-  };
-
+  logToScreen('Host: start');
+  currentRoom = { code: generateRoomCode(), secret: generateSecret(), role: 'host' };
   await Crypto.setSecret(currentRoom.secret);
-
-  $('host-code').textContent = currentRoom.code;
-  $('host-secret').textContent = currentRoom.secret;
-  $('host-status').innerHTML = '<span class="spinner"></span>Ожидание гостя';
-  $('host-status').className = 'status-line waiting';
-
+  $('host-code').textContent = currentRoom.code; $('host-secret').textContent = currentRoom.secret;
   showScreen('host');
-
   peer = createPeerConnection();
-
   dataChannel = peer.createDataChannel('chat', { ordered: true });
   setupDataChannel(dataChannel);
-
-  peer.onconnectionstatechange = () => {
-    if (peer.connectionState === 'failed') {
-      handleConnectionFail('Не удалось установить соединение');
-    }
-  };
-
-  // Создаём оффер
-  const offer = await peer.createOffer();
-  await peer.setLocalDescription(offer);
-  await waitIceComplete(peer);
-
-  const sdp = peer.localDescription.sdp;
-  await signaling(`/api/room/${currentRoom.code}/offer`, 'POST', JSON.stringify({ sdp }));
-
-  // Начинаем опрос answer
-  let attempts = 0;
-  const maxAttempts = Math.floor(CONFIG.answerTimeout / CONFIG.answerPollInterval);
+  peer.onconnectionstatechange = () => { logToScreen('ICE State: ' + peer.connectionState); if (peer.connectionState === 'failed') handleConnectionFail('Не удалось установить соединение'); };
+  const offer = await peer.createOffer(); await peer.setLocalDescription(offer); await waitIceComplete(peer);
+  await signaling(`/api/room/${currentRoom.code}/offer`, 'POST', JSON.stringify({ sdp: peer.localDescription.sdp }));
   answerPollTimer = setInterval(async () => {
-    attempts++;
-    if (attempts > maxAttempts) {
-      clearInterval(answerPollTimer);
-      handleConnectionFail('Гость не подключился. Попробуй снова.');
-      return;
-    }
     try {
       const res = await signaling(`/api/room/${currentRoom.code}/answer`);
-      if (res.data) {
-        clearInterval(answerPollTimer);
-        answerPollTimer = null;
-        const answer = JSON.parse(res.data);
-        await peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp });
-        // Ожидаем события onopen — оно переключит экран
-        // На всякий случай переключаем экран чата
-        showScreen('chat');
-        updateChatStatus('соединение...', false);
-      }
-    } catch (e) {
-      if (e.message !== 'not_found') console.error('poll error', e);
-    }
+      if (res.data) { clearInterval(answerPollTimer); answerPollTimer = null; const answer = JSON.parse(res.data); await peer.setRemoteDescription({ type: 'answer', sdp: answer.sdp }); showScreen('chat'); updateChatStatus('соединение...', false); }
+    } catch (e) { if (e.message !== 'not_found') logToScreen('Poll: ' + e.message, true); }
   }, CONFIG.answerPollInterval);
-
-  // Сразу переключаемся на чат (соединение установится, когда гость подключится)
-  // Но оставим на экране хоста, пока гость не подключится — так понятнее
-  const origOnOpen = dataChannel.onopen;
-  dataChannel.onopen = () => {
-    if (origOnOpen) origOnOpen();
-    showScreen('chat');
-  };
+  const origOnOpen = dataChannel.onopen; dataChannel.onopen = () => { if (origOnOpen) origOnOpen(); showScreen('chat'); };
 }
 
-// ГОСТЬ: забрать оффер, создать answer, залить
 async function guestConnect(code, secret) {
-  code = (code || '').trim().toLowerCase();
-  secret = (secret || '').trim();
-
-  if (!/^[a-z0-9]{6}$/.test(code)) {
-    showToast('Код комнаты — 6 символов', true);
-    return;
-  }
-  if (secret.length < 8) {
-    showToast('Секрет слишком короткий', true);
-    return;
-  }
-
+  logToScreen('Guest: start');
+  code = (code || '').trim().toLowerCase(); secret = (secret || '').trim();
+  if (!/^[a-z0-9]{6}$/.test(code)) return showToast('Код комнаты — 6 символов', true);
+  if (secret.length < 8) return showToast('Секрет слишком короткий', true);
   currentRoom = { code, secret, role: 'guest' };
   await Crypto.setSecret(secret);
-
-  showScreen('chat');
-  updateChatStatus('получаем оффер...', false);
-
+  showScreen('chat'); updateChatStatus('получаем оффер...', false);
   try {
     const res = await signaling(`/api/room/${code}/offer`);
     const offer = JSON.parse(res.data);
-
     peer = createPeerConnection();
-
-    peer.ondatachannel = (ev) => {
-      setupDataChannel(ev.channel);
-    };
-
-    peer.onconnectionstatechange = () => {
-      if (peer.connectionState === 'failed') {
-        handleConnectionFail('Не удалось установить соединение. Проверь код и ключ.');
-      }
-    };
-
+    peer.ondatachannel = (ev) => { setupDataChannel(ev.channel); };
+    peer.onconnectionstatechange = () => { logToScreen('ICE State: ' + peer.connectionState); if (peer.connectionState === 'failed') handleConnectionFail('Ошибка соединения'); };
     await peer.setRemoteDescription({ type: 'offer', sdp: offer.sdp });
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    await waitIceComplete(peer);
-
+    const answer = await peer.createAnswer(); await peer.setLocalDescription(answer); await waitIceComplete(peer);
     await signaling(`/api/room/${code}/answer`, 'PUT', JSON.stringify({ sdp: peer.localDescription.sdp }));
-
     updateChatStatus('ожидание соединения...', false);
-  } catch (e) {
-    if (e.message === 'not_found') {
-      handleConnectionFail('Комната не найдена или код истёк. Попроси друга создать новую.');
-    } else {
-      handleConnectionFail('Ошибка: ' + e.message);
-    }
-  }
+  } catch (e) { handleConnectionFail(e.message === 'not_found' ? 'Комната не найдена' : 'Ошибка: ' + e.message); }
 }
 
-// Общий обработчик провала
-function handleConnectionFail(msg) {
-  Audio.error();
-  Haptic.error();
-  if (answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; }
-  if (answerTimeoutTimer) { clearTimeout(answerTimeoutTimer); answerTimeoutTimer = null; }
-  try { peer?.close(); } catch (e) {}
-  peer = null;
-  dataChannel = null;
-  isConnected = false;
-  currentRoom = null;
-  Crypto.clear();
-  $('err-msg').textContent = msg;
-  showScreen('error');
-}
+function handleConnectionFail(msg) { Audio.error(); if (answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; } try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; isConnected = false; currentRoom = null; Crypto.clear(); $('err-msg').textContent = msg; showScreen('error'); }
 
 /* ============================================================
-   СЕКЦИЯ 9 — UI ЧАТА
+   СЕКЦИЯ 9 — UI
    ============================================================ */
-
-function addMessage(text, who) {
-  const messages = $('messages');
-  const div = document.createElement('div');
-  div.className = 'msg ' + who;
-  // textContent — безопасно от XSS
-  const textSpan = document.createElement('span');
-  textSpan.textContent = text;
-  div.appendChild(textSpan);
-  const meta = document.createElement('span');
-  meta.className = 'meta';
-  meta.textContent = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  div.appendChild(meta);
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-}
-
-function addSystemMessage(text) {
-  const messages = $('messages');
-  const div = document.createElement('div');
-  div.className = 'msg system';
-  div.textContent = text;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-}
-
-function updateChatStatus(text, online) {
-  $('chat-status').textContent = text;
-  const dot = $('chat-dot');
-  dot.className = online ? 'dot-online' : 'dot-offline';
-}
-
-function showPartnerTyping() {
-  $('typing-indicator').textContent = 'печатает...';
-  clearTimeout(partnerTypingTimer);
-  partnerTypingTimer = setTimeout(() => {
-    $('typing-indicator').textContent = '';
-  }, 2000);
-}
-
-function updateStatusBar() {
-  const encEl = $('sb-enc');
-  const dchEl = $('sb-datach');
-  encEl.textContent = Crypto ? '🔐 AES-256-GCM' : '🔓';
-  if (dataChannel) {
-    dchEl.textContent = '📡 ' + (dataChannel.readyState || '—');
-  } else {
-    dchEl.textContent = '📡 —';
-  }
-  $('sb-time').textContent = new Date().toLocaleTimeString('ru-RU');
-}
+function addMessage(text, who) { const messages = $('messages'); const div = document.createElement('div'); div.className = 'msg ' + who; const textSpan = document.createElement('span'); textSpan.textContent = text; div.appendChild(textSpan); const meta = document.createElement('span'); meta.className = 'meta'; meta.textContent = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); div.appendChild(meta); messages.appendChild(div); messages.scrollTop = messages.scrollHeight; }
+function addSystemMessage(text) { const messages = $('messages'); const div = document.createElement('div'); div.className = 'msg system'; div.textContent = text; messages.appendChild(div); messages.scrollTop = messages.scrollHeight; }
+function updateChatStatus(text, online) { $('chat-status').textContent = text; $('chat-dot').className = online ? 'dot-online' : 'dot-offline'; }
+function showPartnerTyping() { $('typing-indicator').textContent = 'печатает...'; clearTimeout(partnerTypingTimer); partnerTypingTimer = setTimeout(() => { $('typing-indicator').textContent = ''; }, 2000); }
+function updateStatusBar() { $('sb-enc').textContent = Crypto ? '🔐 AES-256-GCM' : '🔓'; $('sb-datach').textContent = '📡 ' + (dataChannel ? dataChannel.readyState : '—'); $('sb-time').textContent = new Date().toLocaleTimeString('ru-RU'); }
 setInterval(updateStatusBar, 1000);
 
 async function sendMessage() {
-  const input = $('msg-input');
-  const text = input.value.trim();
-  if (!text) return;
-  if (!isConnected || !dataChannel || dataChannel.readyState !== 'open') {
-    showToast('Нет соединения', true);
-    return;
-  }
-
-  try {
-    const cipher = await Crypto.encrypt(text);
-    dataChannel.send(JSON.stringify({ t: 'msg', d: cipher }));
-    addMessage(text, 'me');
-    input.value = '';
-    Audio.send();
-    Haptic.tap();
-  } catch (e) {
-    showToast('Ошибка шифрования', true);
-  }
+  const input = $('msg-input'); const text = input.value.trim(); if (!text) return;
+  if (!isConnected || !dataChannel || dataChannel.readyState !== 'open') return showToast('Нет соединения', true);
+  try { const cipher = await Crypto.encrypt(text); dataChannel.send(JSON.stringify({ t: 'msg', d: cipher })); addMessage(text, 'me'); input.value = ''; Audio.send(); } catch (e) { showToast('Ошибка шифрования', true); logToScreen('ENC FAIL', true); }
 }
-
-// Отправка "печатает..."
 let lastTypingSent = 0;
-function sendTypingSignal() {
-  if (!isConnected || !dataChannel || dataChannel.readyState !== 'open') return;
-  const now = Date.now();
-  if (now - lastTypingSent < 1500) return;
-  lastTypingSent = now;
-  try {
-    dataChannel.send(JSON.stringify({ t: 'typing' }));
-  } catch (e) {}
-}
+function sendTypingSignal() { if (!isConnected || !dataChannel || dataChannel.readyState !== 'open') return; const now = Date.now(); if (now - lastTypingSent < 1500) return; lastTypingSent = now; try { dataChannel.send(JSON.stringify({ t: 'typing' })); } catch (e) {} }
 
 /* ============================================================
-   СЕКЦИЯ 10 — ПОДКЛЮЧЕНИЕ КНОПОК И ВЕТВЛЕНИЙ UI
+   СЕКЦИЯ 10 — КНОПКИ
    ============================================================ */
-
-// Стартовый экран
-$('btn-create').addEventListener('click', async () => {
-  Audio.tap(); Haptic.tap();
-  try {
-    await hostStart();
-  } catch (e) {
-    handleConnectionFail('Ошибка создания комнаты: ' + e.message);
-  }
-});
-
-$('btn-join').addEventListener('click', () => {
-  Audio.tap(); Haptic.tap();
-  $('guest-code').value = '';
-  $('guest-secret').value = '';
-  showScreen('guest');
-});
-
-// Парсинг URL-параметров (если пришёл по ссылке)
-(function parseUrl() {
-  try {
-    const p = new URLSearchParams(location.search);
-    const r = p.get('r') || p.get('room');
-    const k = p.get('k') || p.get('key') || p.get('secret');
-    if (r && k) {
-      $('guest-code').value = r.toLowerCase();
-      $('guest-secret').value = k;
-      showScreen('guest');
-      // Автоматически не подключаемся — пусть юзер нажмёт кнопку
-      showToast('Данные комнаты заполнены. Жми "Подключиться".');
-    }
-  } catch (e) {}
-})();
-
-// Экран хоста
-$('btn-copy').addEventListener('click', async () => {
-  if (!currentRoom) return;
-  const text = `iField — секретный чат\n\nКод: ${currentRoom.code}\nКлюч: ${currentRoom.secret}\n\nОткрой приложение → "Войти по коду"`;
-  await copyText(text);
-});
-
-$('btn-share').addEventListener('click', async () => {
-  if (!currentRoom) return;
-  // Ссылка с параметрами (самый удобный способ, но ключ виден Telegram)
-  const base = location.origin + location.pathname;
-  const link = `${base}?r=${currentRoom.code}&k=${encodeURIComponent(currentRoom.secret)}`;
-  const text = `iField — приватный чат\n${link}`;
-  const ok = await shareText(text);
-  if (!ok) {
-    // Fallback — копировать как два поля
-    await copyText(`Код: ${currentRoom.code}\nКлюч: ${currentRoom.secret}`);
-  }
-});
-
-$('btn-host-cancel').addEventListener('click', async () => {
-  const ok = await confirmModal('Отменить?', 'Комната будет удалена. Собеседник не сможет подключиться.');
-  if (!ok) return;
-  if (answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; }
-  try { peer?.close(); } catch (e) {}
-  peer = null;
-  dataChannel = null;
-  currentRoom = null;
-  Crypto.clear();
-  showScreen('start');
-});
-
-// Экран гостя
-$('btn-guest-connect').addEventListener('click', async () => {
-  Audio.tap(); Haptic.tap();
-  const code = $('guest-code').value;
-  const secret = $('guest-secret').value;
-  await guestConnect(code, secret);
-});
-
-$('btn-guest-back').addEventListener('click', () => {
-  showScreen('start');
-});
-
-// Автопереход фокуса
-$('guest-code').addEventListener('input', (e) => {
-  e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (e.target.value.length === 6) {
-    $('guest-secret').focus();
-  }
-});
-
-// Экран чата
+$('btn-create').addEventListener('click', async () => { Audio.tap(); try { await hostStart(); } catch (e) { handleConnectionFail('Ошибка: ' + e.message); } });
+$('btn-join').addEventListener('click', () => { Audio.tap(); $('guest-code').value = ''; $('guest-secret').value = ''; showScreen('guest'); });
+(function parseUrl() { try { const p = new URLSearchParams(location.search); const r = p.get('r') || p.get('room'); const k = p.get('k') || p.get('key') || p.get('secret'); if (r && k) { $('guest-code').value = r.toLowerCase(); $('guest-secret').value = k; showScreen('guest'); showToast('Данные заполнены. Жми "Подключиться".'); } } catch (e) {} })();
+$('btn-copy').addEventListener('click', async () => { if (!currentRoom) return; await copyText(`iField — секретный чат\n\nКод: ${currentRoom.code}\nКлюч: ${currentRoom.secret}\n\nОткрой приложение → "Войти по коду"`); });
+$('btn-share').addEventListener('click', async () => { if (!currentRoom) return; const link = `${location.origin + location.pathname}?r=${currentRoom.code}&k=${encodeURIComponent(currentRoom.secret)}`; const ok = await shareText(`iField — приватный чат\n${link}`); if (!ok) await copyText(`Код: ${currentRoom.code}\nКлюч: ${currentRoom.secret}`); });
+$('btn-host-cancel').addEventListener('click', async () => { const ok = await confirmModal('Отменить?', 'Комната будет удалена.'); if (!ok) return; if (answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; } try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; currentRoom = null; Crypto.clear(); showScreen('start'); });
+$('btn-guest-connect').addEventListener('click', async () => { Audio.tap(); await guestConnect($('guest-code').value, $('guest-secret').value); });
+$('btn-guest-back').addEventListener('click', () => showScreen('start'));
+$('guest-code').addEventListener('input', (e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''); if (e.target.value.length === 6) $('guest-secret').focus(); });
 $('btn-send').addEventListener('click', sendMessage);
-$('msg-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    sendMessage();
-  }
-});
+$('msg-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
 $('msg-input').addEventListener('input', sendTypingSignal);
-
-$('btn-leave').addEventListener('click', async () => {
-  const ok = await confirmModal('Выйти?', 'Соединение будет разорвано. История исчезнет.');
-  if (!ok) return;
-  try { dataChannel?.close(); } catch (e) {}
-  try { peer?.close(); } catch (e) {}
-  peer = null;
-  dataChannel = null;
-  currentRoom = null;
-  isConnected = false;
-  Crypto.clear();
-  $('messages').innerHTML = '';
-  $('typing-indicator').textContent = '';
-  showScreen('start');
-});
-
-// Экран ошибки
-$('btn-error-back').addEventListener('click', () => {
-  try { peer?.close(); } catch (e) {}
-  peer = null;
-  dataChannel = null;
-  currentRoom = null;
-  isConnected = false;
-  Crypto.clear();
-  showScreen('start');
-});
-
-// Кнопка "назад" в браузере/TMA
-window.addEventListener('popstate', () => {
-  // Не даём уйти со страницы во время активного соединения
-  if (isConnected) {
-    history.pushState(null, '', location.href);
-  }
-});
+$('btn-leave').addEventListener('click', async () => { const ok = await confirmModal('Выйти?', 'История исчезнет.'); if (!ok) return; try { dataChannel?.close(); } catch (e) {} try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; currentRoom = null; isConnected = false; Crypto.clear(); $('messages').innerHTML = ''; $('typing-indicator').textContent = ''; showScreen('start'); });
+$('btn-error-back').addEventListener('click', () => { try { peer?.close(); } catch (e) {} peer = null; dataChannel = null; currentRoom = null; isConnected = false; Crypto.clear(); showScreen('start'); });
+window.addEventListener('popstate', () => { if (isConnected) history.pushState(null, '', location.href); });
 
 /* ============================================================
-   СЕКЦИЯ 11 — ИНИЦИАЛИЗАЦИЯ
+   СЕКЦИЯ 11 — СТАРТ
    ============================================================ */
-
-initTelegram();
-updateStatusBar();
-
-// Очистка при закрытии — на всякий случай
-window.addEventListener('beforeunload', () => {
-  Crypto.clear();
-  try { dataChannel?.close(); } catch (e) {}
-  try { peer?.close(); } catch (e) {}
-});
-
-// Запускаем после загрузки
-console.log('%c🔐 iField P2P — priv by design', 'color:#0f0;font-weight:bold;font-size:14px');
-console.log('%cНикаких логов. Никакой истории. Всё в памяти.', 'color:#0a0');
+initTelegram(); updateStatusBar();
+window.addEventListener('beforeunload', () => { Crypto.clear(); try { dataChannel?.close(); } catch (e) {} try { peer?.close(); } catch (e) {} });
+logToScreen('iField P2P loaded successfully');
 </script>
-
 </body>
 </html>
