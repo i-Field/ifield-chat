@@ -28,7 +28,7 @@ export default {
       if (url.pathname === '/api/room/new' && request.method === 'POST') {
         for (let i = 0; i < 5; i++) {
           const code = generateCode();
-          const exists = await env.LUCKY_DB.get(`room:${code}:offer`);
+          const exists = await env.IFIELD_CRYPTO_KV.get(`room:${code}:offer`);
           if (!exists) return json({ code }, 200, cors);
         }
         return json({ error: 'busy' }, 503, cors);
@@ -41,7 +41,7 @@ export default {
         const key = `room:${code}:${type}`;
 
         if (request.method === 'GET') {
-          const val = await env.LUCKY_DB.get(key);
+          const val = await env.IFIELD_CRYPTO_KV.get(key);
           if (!val) return json({ error: 'not_found' }, 404, cors);
           return json({ data: val }, 200, cors);
         }
@@ -51,7 +51,7 @@ export default {
           if (body.length === 0 || body.length > MAX_SIZE) {
             return json({ error: 'bad_size' }, 413, cors);
           }
-          await env.LUCKY_DB.put(key, body, { expirationTtl: TTL });
+          await env.IFIELD_CRYPTO_KV.put(key, body, { expirationTtl: TTL });
           return json({ ok: true }, 200, cors);
         }
       }
@@ -61,8 +61,8 @@ export default {
       if (cm && request.method === 'POST') {
         const code = cm[1];
         await Promise.all([
-          env.LUCKY_DB.delete(`room:${code}:offer`),
-          env.LUCKY_DB.delete(`room:${code}:answer`),
+          env.IFIELD_CRYPTO_KV.delete(`room:${code}:offer`),
+          env.IFIELD_CRYPTO_KV.delete(`room:${code}:answer`),
         ]);
         return json({ ok: true }, 200, cors);
       }
