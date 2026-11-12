@@ -8,13 +8,13 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root {
-  --green: #00ff41;
-  --green-dim: #008f11;
-  --bg: #050505;
-  --panel: rgba(5, 15, 5, 0.85);
-  --border: rgba(0, 255, 65, 0.3);
-  --danger: #ff3333;
-  --warn: #ffaa00;
+  --green: #0f0;
+  --green-dim: #0a0;
+  --bg: #000;
+  --panel: rgba(0, 20, 0, 0.82);
+  --border: rgba(0, 255, 0, 0.25);
+  --danger: #f33;
+  --warn: #fa0;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -25,219 +25,338 @@ html, body {
   background: var(--bg); color: var(--green);
   font-family: -apple-system, BlinkMacSystemFont, "SF Mono", monospace;
   font-size: 15px; -webkit-font-smoothing: antialiased;
-  user-select: none; -webkit-user-select: none;
+  overscroll-behavior: none; user-select: none; -webkit-user-select: none;
 }
 input, textarea, .selectable { user-select: text !important; -webkit-user-select: text !important; }
 
-#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.15; pointer-events: none; }
+#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.35; pointer-events: none; }
 
 .screen {
-  position: fixed; inset: 0; display: none; flex-direction: column;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  display: none; flex-direction: column;
   padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 16px);
-  z-index: 10; transition: opacity 0.3s;
+  z-index: 10;
 }
 .screen.active { display: flex; }
 
+/* Переключатель языков */
+.lang-switch {
+  position: absolute; top: calc(var(--safe-top) + 20px); right: 20px;
+  display: flex; gap: 5px; z-index: 20;
+}
+.lang-btn {
+  background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+  color: var(--green); padding: 4px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: bold; cursor: pointer;
+}
+.lang-btn.active { background: rgba(0,255,0,0.2); border-color: var(--green); }
+
 #screen-start { align-items: center; justify-content: center; text-align: center; }
-.logo { font-size: 72px; margin-bottom: 8px; filter: drop-shadow(0 0 20px var(--green)); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
-.title { font-size: 32px; font-weight: 800; letter-spacing: 4px; text-shadow: 0 0 15px var(--green); margin-bottom: 4px; }
-.subtitle { font-size: 11px; opacity: 0.6; letter-spacing: 2px; margin-bottom: 32px; }
+.logo { font-size: 64px; margin-bottom: 8px; filter: drop-shadow(0 0 20px var(--green)); animation: pulse 2.5s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+.title { font-size: 26px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; text-shadow: 0 0 20px var(--green); }
+.subtitle { font-size: 12px; opacity: 0.6; margin-bottom: 32px; letter-spacing: 1px; }
 
 .big-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 100%; max-width: 320px; padding: 16px; margin: 8px 0;
-  border: 1px solid var(--border); border-radius: 14px;
+  width: 100%; max-width: 340px; padding: 16px 24px; margin: 8px 0;
+  border: 1px solid var(--border); border-radius: 12px;
   background: var(--panel); color: var(--green);
   font-size: 16px; font-weight: 600; font-family: inherit;
-  cursor: pointer; transition: all 0.2s; backdrop-filter: blur(10px);
+  cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px;
+  backdrop-filter: blur(5px);
 }
-.big-btn:active { background: rgba(0, 255, 65, 0.15); transform: scale(0.97); box-shadow: 0 0 20px rgba(0,255,65,0.3); }
-.big-btn.primary { border-color: var(--green); box-shadow: inset 0 0 15px rgba(0,255,65,0.1); }
-.big-btn .sub { font-size: 11px; opacity: 0.6; font-weight: 400; margin-top: 4px; }
-.btn-row { display: flex; gap: 8px; width: 100%; max-width: 320px; }
+.big-btn:active { background: rgba(0, 255, 0, 0.15); transform: scale(0.98); }
+.big-btn.primary { background: rgba(0, 255, 0, 0.15); border-color: var(--green); box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
+.big-btn .sub { display: block; font-size: 11px; opacity: 0.6; font-weight: 400; margin-top: 3px; }
+.btn-row { display: flex; gap: 8px; width: 100%; max-width: 340px; }
 .btn-row .big-btn { margin: 8px 0; padding: 12px; font-size: 14px; }
 
-.section-title { font-size: 11px; opacity: 0.6; letter-spacing: 1px; margin: 16px 0 6px; text-transform: uppercase; }
+.paranoid-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; max-width: 340px; margin-top: 16px; padding: 12px;
+  background: rgba(255, 170, 0, 0.1); border: 1px dashed var(--warn);
+  border-radius: 12px; font-size: 13px; color: var(--warn);
+  cursor: pointer; transition: all 0.3s; backdrop-filter: blur(5px);
+}
+.paranoid-toggle:active { background: rgba(255, 170, 0, 0.2); }
+.paranoid-toggle.active { background: rgba(255, 51, 51, 0.15); border-color: var(--danger); color: var(--danger); }
+.paranoid-toggle .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--warn); transition: 0.3s; }
+.paranoid-toggle.active .dot { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+
+.privacy-note { position: absolute; bottom: calc(var(--safe-bottom) + 20px); left: 16px; right: 16px; font-size: 10px; opacity: 0.4; text-align: center; line-height: 1.5; letter-spacing: 0.3px; }
+
+#screen-host { align-items: stretch; }
+.section-title { font-size: 12px; opacity: 0.6; letter-spacing: 2px; margin: 16px 0 8px; text-transform: uppercase; }
 .code-box {
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 12px; padding: 16px; margin-bottom: 12px;
-  font-size: 24px; font-weight: 700; letter-spacing: 3px;
-  text-align: center; color: var(--green); text-shadow: 0 0 10px var(--green);
-  user-select: all; -webkit-user-select: all; backdrop-filter: blur(10px);
-  cursor: pointer;
+  font-family: "SF Mono", monospace; font-size: 22px; font-weight: 700;
+  letter-spacing: 3px; text-align: center; color: var(--green);
+  text-shadow: 0 0 10px var(--green); word-break: break-all;
+  user-select: all; -webkit-user-select: all; cursor: pointer;
+  backdrop-filter: blur(5px);
 }
 .code-box.secret { font-size: 14px; letter-spacing: 1px; color: var(--warn); text-shadow: 0 0 10px var(--warn); }
 .input-field {
-  width: 100%; padding: 16px; background: var(--panel);
+  width: 100%; padding: 14px 16px; background: var(--panel);
   border: 1px solid var(--border); border-radius: 12px;
-  color: var(--green); font-family: inherit; font-size: 16px;
-  margin-bottom: 12px; outline: none; text-align: center;
-  backdrop-filter: blur(10px); transition: border 0.2s;
+  color: var(--green); font-family: "SF Mono", monospace; font-size: 16px;
+  letter-spacing: 2px; margin-bottom: 12px; outline: none; text-align: center;
+  backdrop-filter: blur(5px);
 }
-.input-field:focus { border-color: var(--green); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
+.input-field:focus { border-color: var(--green); box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); }
+.input-field::placeholder { color: rgba(0, 255, 0, 0.3); letter-spacing: 1px; }
 
-#screen-chat { padding: 0; }
+.status-line { text-align: center; font-size: 13px; padding: 12px; border-radius: 10px; background: rgba(0, 30, 0, 0.6); border: 1px solid var(--border); margin-top: 12px; backdrop-filter: blur(5px); }
+.status-line.waiting::after { content: ''; display: inline-block; animation: dots 1.5s steps(4, end) infinite; }
+@keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--green-dim); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#screen-chat { padding: 0; display: none; flex-direction: column; }
+#screen-chat.active { display: flex; }
 .chat-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: calc(var(--safe-top) + 12px) 16px 12px;
-  background: var(--panel); border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(15px); z-index: 10;
+  padding: calc(var(--safe-top) + 10px) 16px 10px;
+  background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0;
+  backdrop-filter: blur(10px);
 }
-.chat-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; }
-.status { font-size: 10px; display: flex; align-items: center; gap: 6px; opacity: 0.8; }
-.dot-online { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+.chat-header .title-small { font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+.chat-header .status { font-size: 11px; opacity: 0.7; display: flex; align-items: center; gap: 6px; }
+.dot-online { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s ease-in-out infinite; }
 .dot-offline { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
-.header-btn { background: transparent; border: none; color: var(--green); font-size: 20px; padding: 4px; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.header-btn { background: transparent; border: 1px solid var(--border); color: var(--green); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; cursor: pointer; }
+.header-btn:active { background: rgba(0, 255, 0, 0.15); }
 
-.messages { flex: 1; overflow-y: auto; padding: 16px; scroll-behavior: smooth; }
-.msg {
-  max-width: 85%; margin-bottom: 10px; padding: 12px 16px;
-  border-radius: 16px; font-size: 15px; line-height: 1.4;
-  animation: msgIn 0.2s ease-out; backdrop-filter: blur(5px);
-  transition: opacity 0.5s;
-}
-@keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.msg.me { margin-left: auto; background: rgba(0, 255, 65, 0.15); border: 1px solid rgba(0, 255, 65, 0.3); border-bottom-right-radius: 4px; }
-.msg.partner { margin-right: auto; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-bottom-left-radius: 4px; color: #e0ffe0; }
-.msg.system { margin: 16px auto; text-align: center; font-size: 11px; color: var(--warn); background: transparent; opacity: 0.8; }
-.msg .meta { display: block; font-size: 9px; opacity: 0.5; margin-top: 6px; }
-.typing { font-size: 11px; opacity: 0.6; padding: 0 16px 4px; height: 18px; font-style: italic; }
-.input-bar { display: flex; gap: 8px; padding: 12px 16px calc(var(--safe-bottom) + 12px); background: var(--panel); border-top: 1px solid var(--border); backdrop-filter: blur(15px); }
-.input-bar input { flex: 1; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 20px; color: var(--green); font-size: 15px; outline: none; }
-.send-btn { padding: 0 20px; background: var(--green); border: none; border-radius: 20px; color: #000; font-size: 18px; font-weight: bold; }
+.messages { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 4px; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; user-select: text; -webkit-user-select: text; }
+.msg { max-width: 82%; margin-bottom: 8px; padding: 10px 14px; border-radius: 16px; font-size: 15px; line-height: 1.35; word-wrap: break-word; word-break: break-word; animation: msgIn 0.2s ease-out; user-select: text; -webkit-user-select: text; transition: opacity 0.5s; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.msg.me { margin-left: auto; background: rgba(0, 255, 0, 0.18); border: 1px solid rgba(0, 255, 0, 0.3); border-bottom-right-radius: 4px; }
+.msg.partner { margin-right: auto; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-bottom-left-radius: 4px; color: #d0ffd0; }
+.msg.system { margin: 12px auto; text-align: center; max-width: 90%; background: transparent; color: var(--warn); font-size: 11px; opacity: 0.8; letter-spacing: 0.5px; padding: 4px 8px; }
+.msg .meta { display: block; font-size: 9px; opacity: 0.5; margin-top: 4px; letter-spacing: 0.5px; }
+.typing { font-size: 11px; opacity: 0.6; padding: 4px 16px; height: 20px; font-style: italic; }
 
+.input-bar { display: flex; gap: 8px; padding: 10px 12px calc(var(--safe-bottom) + 10px); background: var(--panel); border-top: 1px solid var(--border); flex-shrink: 0; backdrop-filter: blur(10px); }
+.input-bar input { flex: 1; padding: 12px 14px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--border); border-radius: 12px; color: var(--green); font-family: inherit; font-size: 15px; outline: none; }
+.input-bar input:focus { border-color: var(--green); box-shadow: 0 0 12px rgba(0, 255, 0, 0.2); }
+.input-bar input::placeholder { color: rgba(0, 255, 0, 0.3); }
+.send-btn { padding: 12px 18px; background: rgba(0, 255, 0, 0.2); border: 1px solid var(--green); border-radius: 12px; color: var(--green); font-family: inherit; font-size: 20px; cursor: pointer; min-width: 56px; }
+.send-btn:active { background: rgba(0, 255, 0, 0.4); }
+
+#screen-error { align-items: center; justify-content: center; text-align: center; }
+.err-icon { font-size: 64px; margin-bottom: 16px; filter: drop-shadow(0 0 15px var(--danger)); }
+.err-msg { font-size: 15px; opacity: 0.85; max-width: 340px; line-height: 1.5; margin-bottom: 24px; }
+
+/* Статус-бар */
 .status-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.95); border-top: 1px solid var(--border);
-  padding: 4px 8px calc(var(--safe-bottom) + 4px);
-  font-size: 9px; color: var(--green); opacity: 0.7;
-  display: flex; justify-content: space-between; z-index: 20;
-  font-family: "SF Mono", monospace; pointer-events: none;
+  background: rgba(0, 0, 0, 0.9); border-top: 1px solid var(--border);
+  padding: 4px 10px calc(var(--safe-bottom) + 4px);
+  font-size: 9px; opacity: 0.6;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+  z-index: 20; font-family: "SF Mono", monospace; pointer-events: none;
 }
+.status-bar span { white-space: nowrap; }
 
-.toast { position: fixed; top: calc(var(--safe-top) + 16px); left: 50%; transform: translate(-50%, -100px); background: rgba(0, 30, 0, 0.95); border: 1px solid var(--green); color: var(--green); padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 100; transition: all 0.3s; box-shadow: 0 0 20px rgba(0,255,65,0.3); }
-.toast.show { transform: translate(-50%, 0); }
-.toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 20px rgba(255,50,50,0.3); }
+.toast { position: fixed; top: calc(var(--safe-top) + 16px); left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(0, 30, 0, 0.95); border: 1px solid var(--green); color: var(--green); padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 100; transition: transform 0.3s ease; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); pointer-events: none; max-width: 90vw; text-align: center; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255, 50, 50, 0.3); }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; backdrop-filter: blur(5px); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
 .modal-overlay.active { display: flex; }
-.modal { background: #0a0a0a; border: 1px solid var(--green); border-radius: 16px; padding: 24px; max-width: 340px; width: 100%; box-shadow: 0 0 40px rgba(0,255,65,0.2); }
-.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; text-shadow: 0 0 10px var(--green); }
-.modal-text { font-size: 13px; opacity: 0.8; line-height: 1.5; margin-bottom: 20px; }
+.modal { background: #001500; border: 1px solid var(--green); border-radius: 16px; padding: 24px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 0 60px rgba(0, 255, 0, 0.2); }
+.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+.modal-text { font-size: 13px; opacity: 0.75; line-height: 1.5; margin-bottom: 20px; }
 .modal-btns { display: flex; gap: 8px; }
 .modal-btns .big-btn { margin: 0; padding: 12px; font-size: 14px; }
 
 #debug-log { position: fixed; bottom: 30px; left: 10px; right: 10px; max-height: 150px; overflow-y: auto; background: rgba(20,0,0,0.95); border: 1px solid var(--danger); border-radius: 8px; padding: 8px; font-size: 10px; color: #faa; display: none; z-index: 999; }
 #debug-log.active { display: block; }
 #debug-toggle { position: fixed; top: calc(var(--safe-top) + 10px); right: 10px; width: 24px; height: 24px; background: rgba(255,0,0,0.1); border-radius: 50%; z-index: 1000; opacity: 0.3; }
+
+/* 🔥 Анимация уничтожения */
+#wipe-overlay {
+  position: fixed; inset: 0; z-index: 9999; background: rgba(255, 0, 0, 0.9);
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; letter-spacing: 2px; text-shadow: 0 0 20px #ff0, 0 0 40px #f00;
+  backdrop-filter: blur(10px);
+}
+#wipe-overlay.active { display: flex; animation: wipeAnim 1.2s forwards; }
+.wipe-text { font-size: 20px; color: #fff; }
+@keyframes wipeAnim {
+  0% { opacity: 0; transform: scale(1.5); filter: brightness(3); }
+  20% { opacity: 1; transform: scale(1); filter: brightness(1); }
+  80% { opacity: 1; transform: scale(1); filter: brightness(1); }
+  100% { opacity: 0; transform: scale(0.9); filter: brightness(0); }
+}
+body.shake { animation: shakeBody 0.4s ease-in-out; }
+@keyframes shakeBody {
+  0%, 100% { transform: translate(0, 0); }
+  10%, 30%, 50%, 70%, 90% { transform: translate(-5px, 2px); }
+  20%, 40%, 60%, 80% { transform: translate(5px, -2px); }
+}
 </style>
 </head>
 <body>
 
 <canvas id="matrixCanvas"></canvas>
 
-<!-- ГЛАВНЫЙ ЭКРАН -->
+<!-- Переключатель языков -->
+<div class="lang-switch">
+  <button class="lang-btn" onclick="setLang('ru')" id="btn-ru">RU</button>
+  <button class="lang-btn" onclick="setLang('uk')" id="btn-uk">UK</button>
+  <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+</div>
+
+<!-- ЭКРАН 1: Старт -->
 <div id="screen-start" class="screen active">
   <div class="logo">🔐</div>
   <div class="title">iField</div>
-  <div class="subtitle">P2P · E2E · PRIVACY FIRST</div>
+  <div class="subtitle" data-i18n="subtitle">P2P · E2E · БЕЗ СЕРВЕРОВ</div>
 
-  <button id="btn-create" class="big-btn primary">🆕 Создать комнату<span class="sub">Сгенерировать код и ключ</span></button>
-  <button id="btn-join" class="big-btn">🔑 Войти по коду<span class="sub">Подключиться к другу</span></button>
-  
+  <button id="btn-create" class="big-btn primary">
+    <span data-i18n="btn-create">🆕 Создать комнату</span>
+    <span class="sub" data-i18n="btn-create-sub">Получишь код и ключ для друга</span>
+  </button>
+
+  <button id="btn-join" class="big-btn">
+    <span data-i18n="btn-join">🔑 Войти по коду</span>
+    <span class="sub" data-i18n="btn-join-sub">Есть код и ключ от друга?</span>
+  </button>
+
   <div class="btn-row">
-    <button id="btn-donate" class="big-btn" style="border-color: var(--warn); color: var(--warn);">💎 Донат<span class="sub">Stars</span></button>
-    <button id="btn-info" class="big-btn">📖 Инструкция<span class="sub">Как это работает</span></button>
+    <button id="btn-donate" class="big-btn" style="border-color: var(--warn); color: var(--warn);">
+      <span data-i18n="btn-donate">💎 Донат</span>
+      <span class="sub">Stars</span>
+    </button>
+    <button id="btn-info" class="big-btn">
+      <span data-i18n="btn-info">📖 Инструкция</span>
+      <span class="sub" data-i18n="btn-info-sub">Как это работает</span>
+    </button>
+  </div>
+
+  <div class="paranoid-toggle" id="btn-paranoid" onclick="toggleParanoid()">
+    <span class="dot" id="paranoid-dot"></span>
+    <span id="paranoid-text" data-i18n="paranoid-off">🌐 Обычный режим (Интернет)</span>
+  </div>
+
+  <div class="privacy-note" data-i18n="privacy-note">
+    Никаких аккаунтов. Никаких логов. Никакой истории.<br>
+    Всё живёт только в этой вкладке — закрыл, значит стёр.
   </div>
 </div>
 
-<!-- ЭКРАН ХОСТА -->
+<!-- ЭКРАН 2: Хост -->
 <div id="screen-host" class="screen">
-  <div class="section-title">📋 Код комнаты</div>
-  <div class="code-box" id="host-code">...</div>
-  <div class="section-title">🔐 Ключ (нажми, чтобы показать)</div>
-  <div class="code-box secret" id="host-secret" onclick="toggleSecretVisibility()">...</div>
+  <div class="section-title" data-i18n="host-code-title">📋 Передай другу</div>
+  <div class="code-box" id="host-code" title="Код комнаты">...</div>
+
+  <div class="section-title" data-i18n="host-secret-title">🔐 Секретный ключ (нажми, чтобы показать)</div>
+  <div class="code-box secret" id="host-secret" onclick="toggleSecretVisibility()" title="Секретный ключ">...</div>
+
   <div class="btn-row">
-    <button class="big-btn" id="btn-share">📤 Поделиться</button>
-    <button class="big-btn" id="btn-copy">📋 Копировать</button>
+    <button class="big-btn" id="btn-share" data-i18n="btn-share">📤 Поделиться</button>
+    <button class="big-btn" id="btn-copy" data-i18n="btn-copy">📋 Копировать</button>
   </div>
-  <!-- Индикатор ожидания (Heartbeat) -->
-  <div id="host-waiting-status" style="text-align:center; font-size:12px; margin-top:20px; opacity:0.7;">
-    <span class="spinner"></span> Комната активна. Ждем гостя...
+
+  <div class="status-line waiting" id="host-status">
+    <span class="spinner"></span><span data-i18n="host-wait">Ожидание гостя</span>
   </div>
+
   <div style="flex:1"></div>
-  <button class="big-btn" id="btn-host-cancel">← Отмена</button>
+  <button class="big-btn" id="btn-host-cancel" data-i18n="btn-back">← Отмена</button>
 </div>
 
-<!-- ЭКРАН ГОСТЯ -->
+<!-- ЭКРАН 3: Гость -->
 <div id="screen-guest" class="screen">
-  <div class="section-title">🔑 Код комнаты</div>
-  <input type="text" id="guest-code" class="input-field" placeholder="6 символов" maxlength="6" autocapitalize="none" style="font-size:22px; letter-spacing:4px;">
-  <div class="section-title">🔐 Секретный ключ</div>
-  <input type="text" id="guest-secret" class="input-field" placeholder="Вставь ключ друга" autocapitalize="none" style="font-size:13px;">
-  <button class="big-btn primary" id="btn-guest-connect" style="margin-top:16px;">⚡ Подключиться</button>
+  <div class="section-title" data-i18n="guest-code-title">🔑 Код комнаты</div>
+  <input type="text" id="guest-code" class="input-field" placeholder="6 символов" maxlength="6" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:22px; letter-spacing:4px;">
+
+  <div class="section-title" data-i18n="guest-secret-title">🔐 Секретный ключ</div>
+  <input type="text" id="guest-secret" class="input-field" placeholder="Вставь ключ друга" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="letter-spacing:1px;font-size:13px;">
+
+  <button class="big-btn primary" id="btn-guest-connect" style="margin-top:16px;" data-i18n="btn-connect">⚡ Подключиться</button>
   <div style="flex:1"></div>
-  <button class="big-btn" id="btn-guest-back">← Назад</button>
+  <button class="big-btn" id="btn-guest-back" data-i18n="btn-back">← Назад</button>
 </div>
 
-<!-- ЭКРАН ЧАТА -->
+<!-- ЭКРАН 4: Чат -->
 <div id="screen-chat" class="screen">
   <div class="chat-header">
     <div style="display:flex; gap:10px; align-items:center;">
       <button class="header-btn" id="btn-leave" title="Выйти">✕</button>
       <button class="header-btn" id="btn-panic" style="color:var(--danger); font-size:18px;" title="Стереть всё и выйти">💥</button>
     </div>
-    <div class="chat-title">🔐 ЗАЩИЩЁННЫЙ КАНАЛ</div>
-    <button class="header-btn" id="btn-burn" style="font-size:11px; border:1px solid var(--warn); padding:4px 8px; border-radius:8px; color:var(--warn);">🔥 ВЫКЛ</button>
+    <div class="title-small" data-i18n="chat-title">🔐 ЗАЩИЩЁННЫЙ КАНАЛ</div>
+    <button class="header-btn" id="btn-burn" style="font-size:11px; border:1px solid var(--warn); padding:4px 8px; border-radius:8px; color:var(--warn);">
+      <span data-i18n="burn-off">🔥 ВЫКЛ</span>
+    </button>
   </div>
+
   <div class="messages" id="messages"></div>
   <div class="typing" id="typing-indicator"></div>
+
   <div class="input-bar">
-    <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off" enterkeyhint="send">
+    <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="send" data-i18n-placeholder="chat-placeholder">
     <button class="send-btn" id="btn-send">➤</button>
   </div>
 </div>
 
-<!-- ЭКРАН ИНСТРУКЦИИ -->
+<!-- ЭКРАН 5: Инструкция -->
 <div id="screen-info" class="screen" style="overflow-y:auto; padding-top:60px;">
-  <div class="title" style="font-size:24px; margin-bottom:20px;">📖 Инструкция</div>
-  <div style="font-size:14px; line-height:1.6; opacity:0.8; margin-bottom:16px;">
-    <b>1. Как начать?</b><br>Нажми «Создать комнату». Приложение сгенерирует <b>Код</b> и <b>Ключ</b>.<br><br>
-    <b>2. Как подключиться?</b><br>Отправь другу Код и Ключ. Он должен нажать «Войти по коду» и ввести их.<br><br>
-    <b>3. Приватность</b><br>Сообщения шифруются (AES-256 + SHA-512) и идут напрямую между устройствами. Сервер (Cloudflare) видит только технические данные для связи и стирает их через 5 минут.<br><br>
-    <b>4. Режим секретности</b><br>Кнопка 🔥 в чате включает самоликвидацию: сообщения исчезнут через 10 секунд после прочтения.<br><br>
-    <b>5. Кнопка 💥</b><br>Мгновенно стирает всю историю и ключи, если рядом кто-то посторонний.
+  <div class="title" style="font-size:24px; margin-bottom:20px;" data-i18n="info-title">📖 Инструкция</div>
+  <div style="font-size:14px; line-height:1.6; opacity:0.8; margin-bottom:16px;" data-i18n="info-text">
   </div>
-  <button class="big-btn" id="btn-info-back" style="margin-top:20px;">← Назад</button>
+  <button class="big-btn" id="btn-info-back" style="margin-top:20px;" data-i18n="btn-back">← Назад</button>
 </div>
 
-<!-- ЭКРАН ДОНАТА -->
+<!-- ЭКРАН 6: Донат -->
 <div id="screen-donate" class="screen" style="align-items:center; justify-content:center; text-align:center;">
-  <div class="title" style="font-size:28px; margin-bottom:8px;">💎 Поддержка</div>
-  <div class="subtitle" style="margin-bottom:24px;">Выбери количество звёзд</div>
+  <div class="title" style="font-size:28px; margin-bottom:8px;" data-i18n="donate-title">💎 Поддержка</div>
+  <div class="subtitle" style="margin-bottom:24px;" data-i18n="donate-sub">Выбери количество звёзд</div>
   
   <button class="big-btn primary" onclick="processDonation(100)" style="font-size:20px;">⭐ 100</button>
   <button class="big-btn primary" onclick="processDonation(1000)" style="font-size:20px;">⭐ 1 000</button>
   <button class="big-btn primary" onclick="processDonation(10000)" style="font-size:20px;">⭐ 10 000</button>
   <button class="big-btn primary" onclick="processDonation(100000)" style="font-size:20px;">⭐ 100 000</button>
   
-  <button class="big-btn" onclick="showScreen('start')" style="margin-top:24px;">← Назад</button>
+  <button class="big-btn" onclick="showScreen('start')" style="margin-top:24px;" data-i18n="btn-back">← Назад</button>
+</div>
+
+<!-- ЭКРАН 7: Ошибка -->
+<div id="screen-error" class="screen">
+  <div class="err-icon">⚠️</div>
+  <div class="err-msg" id="err-msg">Что-то пошло не так</div>
+  <button class="big-btn" id="btn-error-back" data-i18n="btn-back">← На главную</button>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="wipe-overlay">
+  <div style="font-size:50px; margin-bottom:10px;">🔥</div>
+  <div class="wipe-text" data-i18n="wipe-text">ДАННЫЕ СТЕРТЫ</div>
+</div>
+
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <div class="modal-title" id="modal-title">...</div>
-    <div class="modal-text" id="modal-text">...</div>
-    <div class="modal-btns"><button class="big-btn" id="modal-no">Нет</button><button class="big-btn primary" id="modal-yes">Да</button></div>
+    <div class="modal-title" id="modal-title">Подтверждение</div>
+    <div class="modal-text" id="modal-text">Вы уверены?</div>
+    <div class="modal-btns">
+      <button class="big-btn" id="modal-no" data-i18n="modal-no">Отмена</button>
+      <button class="big-btn primary" id="modal-yes" data-i18n="modal-yes">Да</button>
+    </div>
   </div>
 </div>
 
-<!-- СТАТУС-БАР -->
+<!-- СТАТУС-БАР (Обновленный) -->
 <div class="status-bar">
-  <span id="sb-enc">🔐 AES-256 / SHA-512</span>
-  <span id="sb-datach">📡 ---</span>
+  <span id="sb-enc">🔐 AES-256</span>
+  <span id="sb-net">📡 ---</span>
+  <span id="sb-bat">🔋 ---%</span>
+  <span id="sb-ping">📶 --ms</span>
   <span id="sb-mem">💾 --- MB</span>
   <span id="sb-time">00:00:00.000</span>
 </div>
@@ -247,30 +366,126 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 
 <script>
 /* ============================================================
-   ИНИЦИАЛИЗАЦИЯ TELEGRAM
+   ПЕРЕВОДЫ (i18n)
+   ============================================================ */
+const translations = {
+  ru: {
+    subtitle: "P2P · E2E · БЕЗ СЕРВЕРОВ",
+    "btn-create": "🆕 Создать комнату", "btn-create-sub": "Получишь код и ключ для друга",
+    "btn-join": "🔑 Войти по коду", "btn-join-sub": "Есть код и ключ от друга?",
+    "btn-donate": "💎 Донат", "btn-info": "📖 Инструкция", "btn-info-sub": "Как это работает",
+    "paranoid-off": "🌐 Обычный режим (Интернет)", "paranoid-on": "🛡️ Параноик: Только Wi-Fi",
+    "privacy-note": "Никаких аккаунтов. Никаких логов. Никакой истории.<br>Всё живёт только в этой вкладке — закрыл, значит стёр.",
+    "host-code-title": "📋 Передай другу", "host-secret-title": "🔐 Секретный ключ (нажми, чтобы показать)",
+    "btn-share": "📤 Поделиться", "btn-copy": "📋 Копировать", "host-wait": "Ожидание гостя",
+    "btn-back": "← Назад", "guest-code-title": "🔑 Код комнаты", "guest-secret-title": "🔐 Секретный ключ",
+    "btn-connect": "⚡ Подключиться", "chat-title": "🔐 ЗАЩИЩЁННЫЙ КАНАЛ",
+    "burn-off": "🔥 ВЫКЛ", "burn-on": "🔥 ВКЛ", "chat-placeholder": "Сообщение...",
+    "info-title": "📖 Инструкция",
+    "info-text": "<b>1. Как начать?</b><br>Нажми «Создать комнату». Приложение сгенерирует <b>Код</b> и <b>Ключ</b>.<br><br><b>2. Как подключиться?</b><br>Отправь другу Код и Ключ. Он должен нажать «Войти по коду» и ввести их.<br><br><b>3. Приватность</b><br>Сообщения шифруются (AES-256 + SHA-512) и идут напрямую. Сервер видит только технические данные.<br><br><b>4. Режим секретности</b><br>Кнопка 🔥 включает самоликвидацию сообщений.<br><br><b>5. Кнопка 💥</b><br>Мгновенно стирает всю историю.<br><br><b>6. Параноик-режим</b><br>Отключает STUN. Чат работает только в одной Wi-Fi сети.",
+    "donate-title": "💎 Поддержка", "donate-sub": "Выбери количество звёзд",
+    "wipe-text": "ДАННЫЕ СТЕРТЫ", "modal-no": "Отмена", "modal-yes": "Да",
+    "err-code": "Код комнаты — 6 символов", "err-secret": "Секрет слишком короткий",
+    "err-room": "Комната не найдена", "err-net": "Ошибка сети. Попробуйте еще раз.",
+    "err-wifi": "Ошибка сети. Убедитесь, что вы в одной Wi-Fi.",
+    "toast-conn": "🔐 КАНАЛ ЗАЩИЩЁН. Соединение установлено.", "toast-closed": "⚪ Соединение закрыто.",
+    "toast-copied": "📋 Скопировано", "toast-err": "Ошибка: ", "toast-thanks": "🎉 Спасибо за поддержку!",
+    "modal-exit-title": "Выйти?", "modal-exit-text": "История будет удалена.",
+    "modal-panic-title": "Стереть всё и выйти?"
+  },
+  uk: {
+    subtitle: "P2P · E2E · БЕЗ СЕРВЕРІВ",
+    "btn-create": "🆕 Створити кімнату", "btn-create-sub": "Отримаєш код і ключ для друга",
+    "btn-join": "🔑 Увійти за кодом", "btn-join-sub": "Є код і ключ від друга?",
+    "btn-donate": "💎 Донат", "btn-info": "📖 Інструкція", "btn-info-sub": "Як це працює",
+    "paranoid-off": "🌐 Звичайний режим (Інтернет)", "paranoid-on": "🛡️ Параноїк: Тільки Wi-Fi",
+    "privacy-note": "Жодних акаунтів. Жодних логів. Жодної історії.<br>Все живе лише у цій вкладці — закрив, значить стер.",
+    "host-code-title": "📋 Передай другу", "host-secret-title": "🔐 Секретний ключ (натисни, щоб показати)",
+    "btn-share": "📤 Поділитися", "btn-copy": "📋 Копіювати", "host-wait": "Очікування гостя",
+    "btn-back": "← Назад", "guest-code-title": "🔑 Код кімнати", "guest-secret-title": "🔐 Секретний ключ",
+    "btn-connect": "⚡ Підключитися", "chat-title": "🔐 ЗАХИЩЕНИЙ КАНАЛ",
+    "burn-off": "🔥 ВИКЛ", "burn-on": "🔥 ВКЛ", "chat-placeholder": "Повідомлення...",
+    "info-title": "📖 Інструкція",
+    "info-text": "<b>1. Як почати?</b><br>Натисни «Створити кімнату». Додаток згенерує <b>Код</b> та <b>Ключ</b>.<br><br><b>2. Як підключитися?</b><br>Надішли другу Код та Ключ. Він має натиснути «Увійти за кодом» і ввести їх.<br><br><b>3. Приватність</b><br>Повідомлення шифруються (AES-256 + SHA-512) і йдуть напряму. Сервер бачить лише технічні дані.<br><br><b>4. Режим секретності</b><br>Кнопка 🔥 включає самоліквідацію повідомлень.<br><br><b>5. Кнопка 💥</b><br>Миттєво стирає всю історію.<br><br><b>6. Параноїк-режим</b><br>Вимикає STUN. Чат працює лише в одній Wi-Fi мережі.",
+    "donate-title": "💎 Підтримка", "donate-sub": "Обери кількість зірок",
+    "wipe-text": "ДАНІ СТЕРТО", "modal-no": "Скасувати", "modal-yes": "Так",
+    "err-code": "Код кімнати — 6 символів", "err-secret": "Секрет занадто короткий",
+    "err-room": "Кімнату не знайдено", "err-net": "Помилка мережі. Спробуйте ще раз.",
+    "err-wifi": "Помилка мережі. Переконайтеся, що ви в одній Wi-Fi.",
+    "toast-conn": "🔐 КАНАЛ ЗАХИЩЕНО. З'єднання встановлено.", "toast-closed": "⚪ З'єднання закрито.",
+    "toast-copied": "📋 Скопійовано", "toast-err": "Помилка: ", "toast-thanks": "🎉 Дякуємо за підтримку!",
+    "modal-exit-title": "Вийти?", "modal-exit-text": "Історія буде видалена.",
+    "modal-panic-title": "Стерти все і вийти?"
+  },
+  en: {
+    subtitle: "P2P · E2E · SERVERLESS",
+    "btn-create": "🆕 Create room", "btn-create-sub": "Get code and key for friend",
+    "btn-join": "🔑 Join by code", "btn-join-sub": "Have friend's code and key?",
+    "btn-donate": "💎 Donate", "btn-info": "📖 Guide", "btn-info-sub": "How it works",
+    "paranoid-off": "🌐 Normal mode (Internet)", "paranoid-on": "🛡️ Paranoid: Wi-Fi Only",
+    "privacy-note": "No accounts. No logs. No history.<br>Everything lives only in this tab.",
+    "host-code-title": "📋 Share with friend", "host-secret-title": "🔐 Secret key (tap to reveal)",
+    "btn-share": "📤 Share", "btn-copy": "📋 Copy", "host-wait": "Waiting for guest",
+    "btn-back": "← Back", "guest-code-title": "🔑 Room code", "guest-secret-title": "🔐 Secret key",
+    "btn-connect": "⚡ Connect", "chat-title": "🔐 SECURE CHANNEL",
+    "burn-off": "🔥 OFF", "burn-on": "🔥 ON", "chat-placeholder": "Message...",
+    "info-title": "📖 Guide",
+    "info-text": "<b>1. How to start?</b><br>Tap «Create room». App generates <b>Code</b> and <b>Key</b>.<br><br><b>2. How to connect?</b><br>Send Code and Key to friend. They tap «Join by code» and enter them.<br><br><b>3. Privacy</b><br>Messages are encrypted (AES-256 + SHA-512) and go directly. Server sees only technical data.<br><br><b>4. Burn mode</b><br>🔥 button enables message self-destruction.<br><br><b>5. Panic button 💥</b><br>Instantly wipes all history.<br><br><b>6. Paranoid mode</b><br>Disables STUN. Chat works only on the same Wi-Fi.",
+    "donate-title": "💎 Support", "donate-sub": "Choose amount of stars",
+    "wipe-text": "DATA WIPED", "modal-no": "Cancel", "modal-yes": "Yes",
+    "err-code": "Room code — 6 chars", "err-secret": "Secret is too short",
+    "err-room": "Room not found", "err-net": "Network error. Try again.",
+    "err-wifi": "Network error. Make sure you are on same Wi-Fi.",
+    "toast-conn": "🔐 CHANNEL SECURED. Connection established.", "toast-closed": "⚪ Connection closed.",
+    "toast-copied": "📋 Copied", "toast-err": "Error: ", "toast-thanks": "🎉 Thanks for support!",
+    "modal-exit-title": "Leave?", "modal-exit-text": "History will be deleted.",
+    "modal-panic-title": "Wipe everything and leave?"
+  }
+};
+
+let currentLang = 'ru';
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[lang][key]) el.innerHTML = translations[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (translations[lang][key]) el.placeholder = translations[lang][key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  $('btn-' + lang).classList.add('active');
+  
+  // Обновляем параноик-режим
+  const ptxt = $('paranoid-text');
+  ptxt.textContent = isParanoidMode ? translations[lang]['paranoid-on'] : translations[lang]['paranoid-off'];
+  
+  // Обновляем кнопку Burn
+  const btxt = $('btn-burn');
+  btxt.innerHTML = `<span>${isParanoidMode ? translations[lang]['burn-on'] : translations[lang]['burn-off']}</span>`;
+}
+
+/* ============================================================
+   ОСТАЛЬНАЯ ЛОГИКА
    ============================================================ */
 let tg = null;
 try {
   tg = window.Telegram?.WebApp;
   if (tg) {
-    tg.ready();
-    tg.expand();
-    tg.setHeaderColor?.('#000000');
-    tg.setBackgroundColor?.('#000000');
+    tg.ready(); tg.expand();
+    tg.setHeaderColor?.('#000000'); tg.setBackgroundColor?.('#000000');
     if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
   }
 } catch (e) { console.error('TG init error', e); }
 
-/* ============================================================
-   КОНФИГ И УТИЛИТЫ
-   ============================================================ */
+let isParanoidMode = false; 
 const CONFIG = { stunServers: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'], iceTimeout: 8000, answerPollInterval: 1500 };
 const $ = id => document.getElementById(id);
 const randomBytes = n => crypto.getRandomValues(new Uint8Array(n));
 const base64Encode = (b) => { let bin = ''; for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i+8192)); return btoa(bin); };
 const base64Decode = (s) => { const bin = atob(s); const b = new Uint8Array(bin.length); for(let i=0; i<bin.length; i++) b[i] = bin.charCodeAt(i); return b; };
 
-// Логи
 const dLog = $('debug-log');
 $('debug-toggle').onclick = () => dLog.classList.toggle('active');
 function logToScreen(msg, isErr = false) {
@@ -281,8 +496,7 @@ function logToScreen(msg, isErr = false) {
 }
 window.onerror = (m, u, l) => logToScreen(`JS ERR: ${m} (line ${l})`, true);
 
-// Экраны
-const screens = { start: $('screen-start'), host: $('screen-host'), guest: $('screen-guest'), chat: $('screen-chat'), info: $('screen-info'), donate: $('screen-donate') };
+const screens = { start: $('screen-start'), host: $('screen-host'), guest: $('screen-guest'), chat: $('screen-chat'), info: $('screen-info'), donate: $('screen-donate'), error: $('screen-error') };
 function showScreen(name) { 
   Object.values(screens).forEach(s => s.classList.remove('active')); 
   if(screens[name]) screens[name].classList.add('active'); 
@@ -292,9 +506,21 @@ function showScreen(name) {
   }
 }
 
-/* ============================================================
-   ВРЕМЯ ДО МИЛЛИСЕКУНД + СТАТУС БАР
-   ============================================================ */
+window.toggleParanoid = function() {
+  isParanoidMode = !isParanoidMode;
+  const btn = $('btn-paranoid'), txt = $('paranoid-text');
+  if (isParanoidMode) {
+    CONFIG.stunServers = []; btn.classList.add('active');
+    txt.textContent = translations[currentLang]['paranoid-on'];
+    showToast(translations[currentLang]['paranoid-on'], false); logToScreen('Paranoid Mode: ON');
+  } else {
+    CONFIG.stunServers = ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'];
+    btn.classList.remove('active'); txt.textContent = translations[currentLang]['paranoid-off'];
+    showToast(translations[currentLang]['paranoid-off'], false); logToScreen('Paranoid Mode: OFF');
+  }
+  Audio.tap();
+};
+
 function updateClock() {
   const now = new Date();
   const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
@@ -303,16 +529,47 @@ function updateClock() {
 }
 requestAnimationFrame(updateClock);
 
+// Расширенный статус-бар
+let batteryLevel = '---';
+let networkType = '---';
+
+if (navigator.getBattery) {
+  navigator.getBattery().then(bat => {
+    batteryLevel = Math.round(bat.level * 100) + '%';
+    $('sb-bat').textContent = (bat.charging ? '⚡' : '🔋') + batteryLevel;
+  });
+}
+
+function updateNetworkInfo() {
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (conn) {
+    networkType = conn.effectiveType ? conn.effectiveType.toUpperCase() : 'Wi-Fi';
+  } else {
+    networkType = 'Wi-Fi'; // Фолбэк
+  }
+  $('sb-net').textContent = '📡 ' + networkType;
+}
+
+async function updatePing() {
+  const start = Date.now();
+  try {
+    await fetch('/api/ping', { method: 'HEAD' }).catch(()=>{});
+    const ping = Date.now() - start;
+    $('sb-ping').textContent = '📶 ' + ping + 'ms';
+  } catch (e) {
+    $('sb-ping').textContent = '📶 ---';
+  }
+}
+
 function updateStatusBar() {
-  $('sb-enc').textContent = Crypto ? '🔐 AES-256/SHA-512' : '🔓 NO ENC';
-  $('sb-datach').textContent = '📡 ' + (dataChannel ? dataChannel.readyState : '---');
+  $('sb-enc').textContent = Crypto ? '🔐 AES-256' : '🔓';
   $('sb-mem').textContent = '💾 ' + (performance.memory ? (performance.memory.usedJSHeapSize/1048576).toFixed(1) : '---') + ' MB';
 }
 setInterval(updateStatusBar, 2000);
+setInterval(updateNetworkInfo, 5000);
+setInterval(updatePing, 5000);
+updateNetworkInfo();
 
-/* ============================================================
-   МАТРИЦА
-   ============================================================ */
 (function() {
   const c = $('matrixCanvas'), ctx = c.getContext('2d');
   let w, h, cols, ypos;
@@ -320,30 +577,31 @@ setInterval(updateStatusBar, 2000);
   function resize() { w = c.width = innerWidth; h = c.height = innerHeight; cols = Math.floor(w/22)+1; ypos = Array(cols).fill(0).map(()=>Math.random()*-50); }
   resize(); addEventListener('resize', resize);
   function loop() {
-    ctx.fillStyle = 'rgba(5,5,5,0.05)'; ctx.fillRect(0,0,w,h);
-    ctx.fillStyle = '#0f0'; ctx.font = '15px monospace';
+    ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = '#0f0'; ctx.font = '16px monospace';
     for(let i=0; i<cols; i++) {
       ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*22, ypos[i]*20);
-      if(ypos[i]*20 > h && Math.random() > 0.975) ypos[i] = 0;
+      if(ypos[i]*20 > h && Math.random() > 0.97) ypos[i] = 0;
       ypos[i]++;
     }
-    requestAnimationFrame(loop);
-  } loop();
+  }
+  setInterval(loop, 70);
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) loop(); });
 })();
 
-/* ============================================================
-   АУДИО
-   ============================================================ */
 const Audio = (() => {
   let ctx;
   const ensure = () => { if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); return ctx; };
-  const tone = (f, d=0.08, t='sine', v=0.1) => { const c=ensure(); const o=c.createOscillator(), g=c.createGain(); o.type=t; o.frequency.value=f; g.gain.setValueAtTime(v,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+d); };
-  return { send:()=>tone(880), recv:()=>{tone(660,0.08); setTimeout(()=>tone(880,0.06),60);}, conn:()=>{tone(440,0.1); setTimeout(()=>tone(660,0.1),90); setTimeout(()=>tone(880,0.15),180);}, err:()=>tone(220,0.15,'sawtooth',0.15) };
+  const tone = (f, d=0.08, t='sine', v=0.15) => { const c=ensure(); const o=c.createOscillator(), g=c.createGain(); o.type=t; o.frequency.value=f; g.gain.setValueAtTime(v,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+d); };
+  return { send:()=>tone(880,0.06,'sine',0.12), recv:()=>{tone(660,0.08); setTimeout(()=>tone(880,0.06),60);}, conn:()=>{tone(440,0.1); setTimeout(()=>tone(660,0.1),90); setTimeout(()=>tone(880,0.15),180);}, err:()=>tone(220,0.15,'sawtooth',0.15), tap:()=>tone(1200,0.02,'square',0.06) };
 })();
 
-/* ============================================================
-   КРИПТОГРАФИЯ (AES-256-GCM + SHA-512)
-   ============================================================ */
+const Haptic = {
+  tap: () => { try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light'); } catch(e){} },
+  success: () => { try { window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success'); } catch(e){} },
+  error: () => { try { window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error'); } catch(e){} },
+};
+
 const Crypto = (() => {
   let key = null;
   return {
@@ -370,11 +628,9 @@ const Crypto = (() => {
   };
 })();
 
-/* ============================================================
-   WEBRTC + SIGNALING
-   ============================================================ */
 let peer, dataChannel, currentRoom, isConnected = false, typingTimer;
-let heartbeatInterval = null; // Таймер для поддержания жизни комнаты
+let heartbeatInterval = null; 
+let answerPollTimer = null;
 
 const signaling = async (path, method='GET', body=null) => {
   const opts = {method, headers:{}}; if(body) { opts.body = body; opts.headers['Content-Type'] = 'application/json'; }
@@ -389,29 +645,17 @@ const waitIce = (pc) => new Promise(r => { if(pc.iceGatheringState==='complete')
 function setupDC(channel) {
   dataChannel = channel;
   dataChannel.onopen = () => {
-    isConnected = true; Audio.conn(); updateChatStatus('подключено', true); updateStatusBar();
-    addSystemMsg('🔐 КАНАЛ ЗАЩИЩЁН. Соединение установлено.');
-    try { window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success'); } catch(e){}
-    
-    // Останавливаем сердцебиение, так как гость подключился
+    isConnected = true; Audio.conn(); Haptic.success(); updateChatStatus('подключено', true); updateStatusBar();
+    addSystemMsg(translations[currentLang]['toast-conn']);
     if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
-    
     if(currentRoom) signaling(`/api/room/${currentRoom.code}/cleanup`, 'POST').catch(()=>{});
   };
-  dataChannel.onclose = () => { 
-    isConnected = false; updateChatStatus('переподключение...', false); updateStatusBar(); 
-    addSystemMsg('⚪ Соединение потеряно. Ожидание...'); 
-  };
+  dataChannel.onclose = () => { isConnected = false; updateChatStatus('отключено', false); updateStatusBar(); addSystemMsg(translations[currentLang]['toast-closed']); };
   dataChannel.onmessage = async (ev) => {
     try {
       const d = JSON.parse(ev.data);
-      if(d.t === 'typing') { $('typing-indicator').textContent = 'печатает...'; clearTimeout(typingTimer); typingTimer = setTimeout(()=>$('typing-indicator').textContent='', 2000); return; }
-      if(d.t === 'msg') { 
-        const txt = await Crypto.decrypt(d.d); 
-        addMsg(txt, 'partner'); 
-        Audio.recv(); 
-        try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light'); } catch(e){}
-      }
+      if(d.t === 'typing') { $('typing-indicator').textContent = '...'; clearTimeout(typingTimer); typingTimer = setTimeout(()=>$('typing-indicator').textContent='', 2000); return; }
+      if(d.t === 'msg') { const txt = await Crypto.decrypt(d.d); addMessage(txt, 'partner'); Audio.recv(); Haptic.tap(); }
     } catch(e) { logToScreen('DECRYPT FAIL', true); }
   };
 }
@@ -421,78 +665,68 @@ async function hostStart() {
   const secret = Array.from(randomBytes(32)).map(b => 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'[b%57]).join('');
   currentRoom = { code, secret, role: 'host' };
   await Crypto.setSecret(secret);
+  
   $('host-code').textContent = code; 
+  $('host-status').innerHTML = `<span class="spinner"></span><span>${translations[currentLang]['host-wait']}</span>`;
+  $('host-status').className = 'status-line waiting';
   showScreen('host');
   
   peer = createPeer(); setupDC(peer.createDataChannel('chat'));
-  peer.onconnectionstatechange = () => { if(peer.connectionState === 'failed') handleFail('Ошибка сети'); };
+  peer.onconnectionstatechange = () => { if(peer.connectionState === 'failed') handleConnectionFail(isParanoidMode ? translations[currentLang]['err-wifi'] : translations[currentLang]['err-net']); };
   
   const offer = await peer.createOffer(); await peer.setLocalDescription(offer); await waitIce(peer);
   const sdpString = JSON.stringify({ sdp: peer.localDescription.sdp });
   
-  // Функция для отправки (и обновления) оффера
   const pushOffer = async () => {
-    try {
-      await signaling(`/api/room/${code}/offer`, 'POST', sdpString);
-      logToScreen('Heartbeat: комната продлена');
-    } catch(e) { logToScreen('Heartbeat error: '+e.message, true); }
+    try { await signaling(`/api/room/${code}/offer`, 'POST', sdpString); logToScreen('Heartbeat: OK'); }
+    catch(e) { logToScreen('Heartbeat error: '+e.message, true); }
   };
 
-  await pushOffer(); // Первая отправка
-  
-  // Запускаем сердцебиение каждые 3 минуты (180 000 мс)
-  // Это будет обновлять 5-минутный таймер на сервере
+  await pushOffer(); 
   heartbeatInterval = setInterval(pushOffer, 180000);
   
-  const poll = setInterval(async () => {
+  if (answerPollTimer) clearInterval(answerPollTimer);
+  answerPollTimer = setInterval(async () => {
     try {
       const res = await signaling(`/api/room/${code}/answer`);
       if(res.data) { 
-        clearInterval(poll); 
+        clearInterval(answerPollTimer); answerPollTimer = null;
         await peer.setRemoteDescription({type:'answer', sdp: JSON.parse(res.data).sdp}); 
-        showScreen('chat'); 
-        updateChatStatus('соединение...', false); 
+        showScreen('chat'); updateChatStatus('соединение...', false); 
       }
-    } catch(e) { 
-      if(e.message !== 'not_found') logToScreen('Poll: '+e.message, true); 
-    }
+    } catch(e) { if(e.message !== 'not_found') logToScreen('Poll: '+e.message, true); }
   }, CONFIG.answerPollInterval);
-  
-  dataChannel.onopen = () => { 
-    clearInterval(poll); 
-    showScreen('chat'); 
-  };
 }
 
 async function guestConnect(code, secret) {
-  if(!/^[a-z0-9]{6}$/.test(code)) return showToast('Неверный код', true);
+  code = (code || '').trim().toLowerCase(); secret = (secret || '').trim();
+  if(!/^[a-z0-9]{6}$/.test(code)) return showToast(translations[currentLang]['err-code'], true);
+  if(secret.length < 8) return showToast(translations[currentLang]['err-secret'], true);
+  
   currentRoom = { code, secret, role: 'guest' }; await Crypto.setSecret(secret);
   showScreen('chat'); updateChatStatus('соединение...', false);
+  
   try {
     const res = await signaling(`/api/room/${code}/offer`);
     peer = createPeer(); peer.ondatachannel = (ev) => setupDC(ev.channel);
-    peer.onconnectionstatechange = () => { if(peer.connectionState === 'failed') handleFail('Ошибка сети'); };
+    peer.onconnectionstatechange = () => { if(peer.connectionState === 'failed') handleConnectionFail(isParanoidMode ? translations[currentLang]['err-wifi'] : translations[currentLang]['err-net']); };
     await peer.setRemoteDescription({type:'offer', sdp: JSON.parse(res.data).sdp});
     const answer = await peer.createAnswer(); await peer.setLocalDescription(answer); await waitIce(peer);
     await signaling(`/api/room/${code}/answer`, 'PUT', JSON.stringify({ sdp: peer.localDescription.sdp }));
-  } catch(e) { handleFail(e.message === 'not_found' ? 'Комната не найдена' : e.message); }
+  } catch(e) { handleConnectionFail(e.message === 'not_found' ? translations[currentLang]['err-room'] : e.message); }
 }
 
-function handleFail(msg) { 
-  Audio.err(); 
-  isConnected = false; 
-  currentRoom = null; 
-  Crypto.clear(); 
+function handleConnectionFail(msg) { 
+  Audio.err(); Haptic.error();
+  isConnected = false; currentRoom = null; Crypto.clear(); 
   if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+  if(answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; }
   try{peer.close();}catch(e){} 
   peer=null; dataChannel=null; 
-  showToast(msg, true); 
-  showScreen('start'); 
+  $('err-msg').textContent = msg;
+  showScreen('error');
 }
 
-/* ============================================================
-   UI
-   ============================================================ */
 let burnMode = false; 
 let secretHidden = true; 
 
@@ -501,122 +735,202 @@ window.toggleSecretVisibility = function() {
   if (!currentRoom) return;
   secretHidden = !secretHidden;
   el.textContent = secretHidden ? '••••••••••••••••' : currentRoom.secret;
-  Audio.send();
+  Audio.tap();
 };
 
 function panicWipe() {
-  Audio.err();
-  isConnected = false; currentRoom = null; Crypto.clear();
-  if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
-  try { if(dataChannel) dataChannel.close(); if(peer) peer.close(); } catch(e) {}
-  peer = null; dataChannel = null;
-  $('messages').innerHTML = '';
-  $('host-secret').textContent = '...';
-  showScreen('start');
-  showToast('💥 Все данные стерты!', true);
+  Audio.err(); Haptic.error();
+  if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
+
+  const overlay = $('wipe-overlay');
+  overlay.classList.add('active');
+  document.body.classList.add('shake');
+
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    document.body.classList.remove('shake');
+
+    isConnected = false; currentRoom = null; Crypto.clear();
+    if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    if(answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; }
+    try { if(dataChannel) dataChannel.close(); if(peer) peer.close(); } catch(e) {}
+    peer = null; dataChannel = null;
+    
+    $('messages').innerHTML = '';
+    $('host-secret').textContent = '...';
+    showScreen('start');
+    showToast(translations[currentLang]['wipe-text'], true);
+  }, 1200);
 }
 
-function addMsg(txt, type) {
-  const div = document.createElement('div'); div.className = 'msg '+type;
-  div.innerHTML = `<span>${txt}</span><span class="meta">${new Date().toLocaleTimeString()}</span>`;
-  $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight;
+function addMessage(text, who) {
+  const messages = $('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  const textSpan = document.createElement('span');
+  textSpan.textContent = text;
+  div.appendChild(textSpan);
+  const meta = document.createElement('span');
+  meta.className = 'meta';
+  meta.textContent = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  div.appendChild(meta);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
   
   if (burnMode) {
-    setTimeout(() => {
-      div.style.opacity = '0';
-      setTimeout(() => div.remove(), 500);
-    }, 10000);
+    setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 500); }, 10000);
   }
 }
-function addSystemMsg(txt) { const div = document.createElement('div'); div.className = 'msg system'; div.textContent = txt; $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight; }
-function updateChatStatus(txt, on) { $('chat-status').textContent = txt; $('chat-dot').className = on ? 'dot-online' : 'dot-offline'; }
-let toastT;
-function showToast(t, err) { const el=$('toast'); el.textContent=t; el.className='toast show'+(err?' error':''); clearTimeout(toastT); toastT=setTimeout(()=>el.className='toast'+(err?' error':''), 2500); }
-function modal(title, text) { return new Promise(r => { $('modal-title').textContent=title; $('modal-text').textContent=text; $('modal').classList.add('active'); $('modal-yes').onclick=()=>{ $('modal').classList.remove('active'); r(true); }; $('modal-no').onclick=()=>{ $('modal').classList.remove('active'); r(false); }; }); }
 
-/* ============================================================
-   КНОПКИ И ДОНАТЫ
-   ============================================================ */
-$('btn-create').onclick = () => { Audio.send(); hostStart().catch(e => handleFail(e.message)); };
-$('btn-join').onclick = () => { Audio.send(); $('guest-code').value=''; $('guest-secret').value=''; showScreen('guest'); };
-$('btn-info').onclick = () => { Audio.send(); showScreen('info'); };
-$('btn-info-back').onclick = () => { Audio.send(); showScreen('start'); };
+function addSystemMsg(text) {
+  const messages = $('messages');
+  const div = document.createElement('div');
+  div.className = 'msg system';
+  div.textContent = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
 
-$('btn-host-cancel').onclick = () => { 
-  currentRoom=null; 
-  if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
-  try{peer.close();}catch(e){} 
-  showScreen('start'); 
+function updateChatStatus(text, online) {
+  $('chat-status').textContent = text;
+  $('chat-dot').className = online ? 'dot-online' : 'dot-offline';
+}
+
+let toastTimer = null;
+function showToast(text, isError = false) {
+  const el = $('toast');
+  el.textContent = text;
+  el.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = 'toast' + (isError ? ' error' : ''); }, 2500);
+}
+
+function confirmModal(title, text) {
+  return new Promise(resolve => {
+    $('modal-title').textContent = title;
+    $('modal-text').textContent = text;
+    $('modal').classList.add('active');
+    const cleanup = (val) => {
+      $('modal').classList.remove('active');
+      $('modal-yes').onclick = null;
+      $('modal-no').onclick = null;
+      resolve(val);
+    };
+    $('modal-yes').onclick = () => cleanup(true);
+    $('modal-no').onclick = () => cleanup(false);
+  });
+}
+
+$('btn-create').onclick = () => { Audio.tap(); Haptic.tap(); hostStart().catch(e => handleConnectionFail(e.message)); };
+$('btn-join').onclick = () => { Audio.tap(); Haptic.tap(); $('guest-code').value=''; $('guest-secret').value=''; showScreen('guest'); };
+$('btn-info').onclick = () => { Audio.tap(); showScreen('info'); };
+$('btn-info-back').onclick = () => { Audio.tap(); showScreen('start'); };
+
+$('btn-host-cancel').onclick = async () => { 
+  if(await confirmModal(translations[currentLang]['modal-exit-title'], translations[currentLang]['modal-exit-text'])) {
+    currentRoom=null; 
+    if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    if(answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; }
+    try{peer.close();}catch(e){} 
+    showScreen('start'); 
+  }
 };
 $('btn-guest-back').onclick = () => showScreen('start');
-$('btn-guest-connect').onclick = () => guestConnect($('guest-code').value, $('guest-secret').value);
+$('btn-guest-connect').onclick = () => { Audio.tap(); Haptic.tap(); guestConnect($('guest-code').value, $('guest-secret').value); };
 
-$('btn-copy').onclick = () => { if(!currentRoom) return; navigator.clipboard.writeText(`Код: ${currentRoom.code}\nКлюч: ${currentRoom.secret}`); showToast('Скопировано'); };
-$('btn-share').onclick = () => { if(!currentRoom) return; const link = `${location.origin+location.pathname}?r=${currentRoom.code}&k=${encodeURIComponent(currentRoom.secret)}`; navigator.share ? navigator.share({text:`iField Чат\n${link}`}) : navigator.clipboard.writeText(link).then(()=>showToast('Ссылка скопирована')); };
+$('btn-copy').onclick = async () => { if(!currentRoom) return; await navigator.clipboard.writeText(`iField Chat\n\nCode: ${currentRoom.code}\nKey: ${currentRoom.secret}`); showToast(translations[currentLang]['toast-copied']); Haptic.success(); };
+$('btn-share').onclick = async () => { 
+  if(!currentRoom) return; 
+  const link = `${location.origin+location.pathname}?r=${currentRoom.code}&k=${encodeURIComponent(currentRoom.secret)}`; 
+  if(navigator.share) { try { await navigator.share({text:`iField Chat\n${link}`}); } catch(e){} }
+  else { await navigator.clipboard.writeText(link); showToast(translations[currentLang]['toast-copied']); }
+};
 
 $('btn-send').onclick = async () => {
   const val = $('msg-input').value.trim(); if(!val || !isConnected) return;
   try { 
     const enc = await Crypto.encrypt(val); 
     dataChannel.send(JSON.stringify({t:'msg', d:enc})); 
-    addMsg(val, 'me'); 
-    $('msg-input').value=''; 
-    Audio.send(); 
-    try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light'); } catch(e){}
-  } catch(e) { showToast('Ошибка шифрования', true); }
+    addMessage(val, 'me'); $('msg-input').value=''; Audio.send(); Haptic.tap();
+  } catch(e) { showToast('Error', true); }
 };
-$('msg-input').onkeydown = (e) => { if(e.key === 'Enter') $('btn-send').click(); };
+$('msg-input').onkeydown = (e) => { if(e.key === 'Enter') { e.preventDefault(); $('btn-send').click(); } };
 $('msg-input').oninput = () => { if(!isConnected) return; const now=Date.now(); if(now - (window._lastT||0) > 1500) { window._lastT=now; dataChannel.send(JSON.stringify({t:'typing'})); } };
 
-$('btn-panic').onclick = () => { if(confirm('Стереть всё и выйти?')) panicWipe(); };
+$('btn-panic').onclick = () => { if(confirm(translations[currentLang]['modal-panic-title'])) panicWipe(); };
 $('btn-burn').onclick = () => {
   burnMode = !burnMode;
-  $('btn-burn').textContent = burnMode ? '🔥 ВКЛ' : '🔥 ВЫКЛ';
-  $('btn-burn').style.color = burnMode ? '#ff3333' : 'var(--warn)';
-  $('btn-burn').style.borderColor = burnMode ? '#ff3333' : 'var(--warn)';
-  showToast(burnMode ? 'Режим секретности: ВКЛ' : 'Режим секретности: ВЫКЛ');
-  Audio.send();
+  $('btn-burn').innerHTML = `<span>${burnMode ? translations[currentLang]['burn-on'] : translations[currentLang]['burn-off']}</span>`;
+  $('btn-burn').style.color = burnMode ? '#f33' : 'var(--warn)';
+  $('btn-burn').style.borderColor = burnMode ? '#f33' : 'var(--warn)';
+  Audio.tap(); Haptic.tap();
 };
 
 $('btn-leave').onclick = async () => { 
-  if(await modal('Выйти?', 'История будет удалена.')) { 
+  if(await confirmModal(translations[currentLang]['modal-exit-title'], translations[currentLang]['modal-exit-text'])) { 
     isConnected=false; currentRoom=null; Crypto.clear(); 
     if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    if(answerPollTimer) { clearInterval(answerPollTimer); answerPollTimer = null; }
     try{dataChannel.close(); peer.close();}catch(e){} 
-    $('messages').innerHTML=''; 
-    showScreen('start'); 
+    $('messages').innerHTML=''; showScreen('start'); 
   } 
 };
 
-$('btn-donate').onclick = () => { Audio.send(); showScreen('donate'); };
+$('btn-error-back').onclick = () => {
+  try { peer?.close(); } catch (e) {}
+  peer = null; dataChannel = null; currentRoom = null; isConnected = false; Crypto.clear();
+  showScreen('start');
+};
+
+$('btn-donate').onclick = () => { Audio.tap(); showScreen('donate'); };
 
 async function processDonation(amount) {
   try {
-    showToast(`Создаем счет на ${amount}⭐...`);
-    const res = await fetch('/api/donate/link', { 
-      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ amount }) 
-    });
+    showToast(`...`);
+    const res = await fetch('/api/donate/link', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ amount }) });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     
     if (window.Telegram?.WebApp?.openInvoice) {
       window.Telegram.WebApp.openInvoice(data.link, (status) => {
-        if(status === 'paid') showToast('🎉 Спасибо за поддержку!');
-        else if(status === 'cancelled') showToast('Отменено', true);
+        if(status === 'paid') { showToast(translations[currentLang]['toast-thanks']); Haptic.success(); }
+        else if(status === 'cancelled') showToast(translations[currentLang]['modal-no'], true);
       });
-    } else {
-      window.open(data.link, '_blank');
-    }
-  } catch(e) { 
-    showToast('Ошибка: ' + e.message, true); 
-  }
+    } else { window.open(data.link, '_blank'); }
+  } catch(e) { showToast(translations[currentLang]['toast-err'] + e.message, true); }
 }
+
+(function parseUrl() {
+  try {
+    const p = new URLSearchParams(location.search);
+    const r = p.get('r') || p.get('room');
+    const k = p.get('k') || p.get('key') || p.get('secret');
+    if (r && k) {
+      $('guest-code').value = r.toLowerCase(); $('guest-secret').value = k;
+      showScreen('guest'); showToast('OK');
+    }
+  } catch (e) {}
+})();
+
+// Автоопределение языка
+try {
+  let lang = 'ru';
+  if (window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code) {
+    lang = window.Telegram.WebApp.initDataUnsafe.user.language_code.substring(0,2);
+  } else {
+    lang = navigator.language.substring(0,2);
+  }
+  if (!translations[lang]) lang = 'en';
+  setLang(lang);
+} catch(e) { setLang('ru'); }
 
 window.addEventListener('beforeunload', () => { 
   Crypto.clear(); 
   if(heartbeatInterval) clearInterval(heartbeatInterval);
+  if(answerPollTimer) clearInterval(answerPollTimer);
   try{dataChannel.close(); peer.close();}catch(e){} 
 });
+
 logToScreen('iField P2P Loaded');
 </script>
 </body>
