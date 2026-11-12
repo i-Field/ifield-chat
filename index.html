@@ -162,7 +162,10 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
     <button class="big-btn" id="btn-share">📤 Поделиться</button>
     <button class="big-btn" id="btn-copy">📋 Копировать</button>
   </div>
-  <div style="text-align:center; font-size:12px; margin-top:20px; opacity:0.7;"><span class="spinner"></span> Ожидание гостя...</div>
+  <!-- Индикатор ожидания (Heartbeat) -->
+  <div id="host-waiting-status" style="text-align:center; font-size:12px; margin-top:20px; opacity:0.7;">
+    <span class="spinner"></span> Комната активна. Ждем гостя...
+  </div>
   <div style="flex:1"></div>
   <button class="big-btn" id="btn-host-cancel">← Отмена</button>
 </div>
@@ -371,6 +374,8 @@ const Crypto = (() => {
    WEBRTC + SIGNALING
    ============================================================ */
 let peer, dataChannel, currentRoom, isConnected = false, typingTimer;
+let heartbeatInterval = null; // Таймер для поддержания жизни комнаты
+
 const signaling = async (path, method='GET', body=null) => {
   const opts = {method, headers:{}}; if(body) { opts.body = body; opts.headers['Content-Type'] = 'application/json'; }
   const res = await fetch(path, opts);
@@ -387,6 +392,10 @@ function setupDC(channel) {
     isConnected = true; Audio.conn(); updateChatStatus('подключено', true); updateStatusBar();
     addSystemMsg('🔐 КАНАЛ ЗАЩИЩЁН. Соединение установлено.');
     try { window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success'); } catch(e){}
+    
+    // Останавливаем сердцебиение, так как гость подключился
+    if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    
     if(currentRoom) signaling(`/api/room/${currentRoom.code}/cleanup`, 'POST').catch(()=>{});
   };
   dataChannel.onclose = () => { 
@@ -419,15 +428,40 @@ async function hostStart() {
   peer.onconnectionstatechange = () => { if(peer.connectionState === 'failed') handleFail('Ошибка сети'); };
   
   const offer = await peer.createOffer(); await peer.setLocalDescription(offer); await waitIce(peer);
-  await signaling(`/api/room/${code}/offer`, 'POST', JSON.stringify({ sdp: peer.localDescription.sdp }));
+  const sdpString = JSON.stringify({ sdp: peer.localDescription.sdp });
+  
+  // Функция для отправки (и обновления) оффера
+  const pushOffer = async () => {
+    try {
+      await signaling(`/api/room/${code}/offer`, 'POST', sdpString);
+      logToScreen('Heartbeat: комната продлена');
+    } catch(e) { logToScreen('Heartbeat error: '+e.message, true); }
+  };
+
+  await pushOffer(); // Первая отправка
+  
+  // Запускаем сердцебиение каждые 3 минуты (180 000 мс)
+  // Это будет обновлять 5-минутный таймер на сервере
+  heartbeatInterval = setInterval(pushOffer, 180000);
   
   const poll = setInterval(async () => {
     try {
       const res = await signaling(`/api/room/${code}/answer`);
-      if(res.data) { clearInterval(poll); await peer.setRemoteDescription({type:'answer', sdp: JSON.parse(res.data).sdp}); showScreen('chat'); updateChatStatus('соединение...', false); }
-    } catch(e) { if(e.message !== 'not_found') logToScreen('Poll: '+e.message, true); }
+      if(res.data) { 
+        clearInterval(poll); 
+        await peer.setRemoteDescription({type:'answer', sdp: JSON.parse(res.data).sdp}); 
+        showScreen('chat'); 
+        updateChatStatus('соединение...', false); 
+      }
+    } catch(e) { 
+      if(e.message !== 'not_found') logToScreen('Poll: '+e.message, true); 
+    }
   }, CONFIG.answerPollInterval);
-  dataChannel.onopen = () => { clearInterval(poll); showScreen('chat'); };
+  
+  dataChannel.onopen = () => { 
+    clearInterval(poll); 
+    showScreen('chat'); 
+  };
 }
 
 async function guestConnect(code, secret) {
@@ -444,7 +478,17 @@ async function guestConnect(code, secret) {
   } catch(e) { handleFail(e.message === 'not_found' ? 'Комната не найдена' : e.message); }
 }
 
-function handleFail(msg) { Audio.err(); isConnected = false; currentRoom = null; Crypto.clear(); try{peer.close();}catch(e){} peer=null; dataChannel=null; showToast(msg, true); showScreen('start'); }
+function handleFail(msg) { 
+  Audio.err(); 
+  isConnected = false; 
+  currentRoom = null; 
+  Crypto.clear(); 
+  if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+  try{peer.close();}catch(e){} 
+  peer=null; dataChannel=null; 
+  showToast(msg, true); 
+  showScreen('start'); 
+}
 
 /* ============================================================
    UI
@@ -463,6 +507,7 @@ window.toggleSecretVisibility = function() {
 function panicWipe() {
   Audio.err();
   isConnected = false; currentRoom = null; Crypto.clear();
+  if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
   try { if(dataChannel) dataChannel.close(); if(peer) peer.close(); } catch(e) {}
   peer = null; dataChannel = null;
   $('messages').innerHTML = '';
@@ -497,7 +542,12 @@ $('btn-join').onclick = () => { Audio.send(); $('guest-code').value=''; $('guest
 $('btn-info').onclick = () => { Audio.send(); showScreen('info'); };
 $('btn-info-back').onclick = () => { Audio.send(); showScreen('start'); };
 
-$('btn-host-cancel').onclick = () => { currentRoom=null; try{peer.close();}catch(e){} showScreen('start'); };
+$('btn-host-cancel').onclick = () => { 
+  currentRoom=null; 
+  if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+  try{peer.close();}catch(e){} 
+  showScreen('start'); 
+};
 $('btn-guest-back').onclick = () => showScreen('start');
 $('btn-guest-connect').onclick = () => guestConnect($('guest-code').value, $('guest-secret').value);
 
@@ -531,6 +581,7 @@ $('btn-burn').onclick = () => {
 $('btn-leave').onclick = async () => { 
   if(await modal('Выйти?', 'История будет удалена.')) { 
     isConnected=false; currentRoom=null; Crypto.clear(); 
+    if(heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
     try{dataChannel.close(); peer.close();}catch(e){} 
     $('messages').innerHTML=''; 
     showScreen('start'); 
@@ -561,7 +612,11 @@ async function processDonation(amount) {
   }
 }
 
-window.addEventListener('beforeunload', () => { Crypto.clear(); try{dataChannel.close(); peer.close();}catch(e){} });
+window.addEventListener('beforeunload', () => { 
+  Crypto.clear(); 
+  if(heartbeatInterval) clearInterval(heartbeatInterval);
+  try{dataChannel.close(); peer.close();}catch(e){} 
+});
 logToScreen('iField P2P Loaded');
 </script>
 </body>
