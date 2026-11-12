@@ -39,14 +39,14 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 }
 .screen.active { display: flex; }
 
-/* Переключатель языков */
+/* ИСПРАВЛЕНО: Жук ушел влево, языки опустились чуть ниже */
 .lang-switch {
   position: absolute; top: calc(var(--safe-top) + 20px); right: 20px;
   display: flex; gap: 5px; z-index: 20;
 }
 .lang-btn {
-  background: rgba(0,0,0,0.5); border: 1px solid var(--border);
-  color: var(--green); padding: 4px 8px; border-radius: 6px;
+  background: rgba(0,0,0,0.7); border: 1px solid var(--border);
+  color: var(--green); padding: 6px 10px; border-radius: 6px;
   font-size: 11px; font-weight: bold; cursor: pointer;
 }
 .lang-btn.active { background: rgba(0,255,0,0.2); border-color: var(--green); }
@@ -150,13 +150,12 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 .err-icon { font-size: 64px; margin-bottom: 16px; filter: drop-shadow(0 0 15px var(--danger)); }
 .err-msg { font-size: 15px; opacity: 0.85; max-width: 340px; line-height: 1.5; margin-bottom: 24px; }
 
-/* Статус-бар */
 .status-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: rgba(0, 0, 0, 0.9); border-top: 1px solid var(--border);
   padding: 4px 10px calc(var(--safe-bottom) + 4px);
-  font-size: 9px; opacity: 0.6;
-  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+  font-size: 10px; opacity: 0.55;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
   z-index: 20; font-family: "SF Mono", monospace; pointer-events: none;
 }
 .status-bar span { white-space: nowrap; }
@@ -173,11 +172,11 @@ input, textarea, .selectable { user-select: text !important; -webkit-user-select
 .modal-btns { display: flex; gap: 8px; }
 .modal-btns .big-btn { margin: 0; padding: 12px; font-size: 14px; }
 
+/* ИСПРАВЛЕНО: Жук теперь слева */
 #debug-log { position: fixed; bottom: 30px; left: 10px; right: 10px; max-height: 150px; overflow-y: auto; background: rgba(20,0,0,0.95); border: 1px solid var(--danger); border-radius: 8px; padding: 8px; font-size: 10px; color: #faa; display: none; z-index: 999; }
 #debug-log.active { display: block; }
-#debug-toggle { position: fixed; top: calc(var(--safe-top) + 10px); right: 10px; width: 24px; height: 24px; background: rgba(255,0,0,0.1); border-radius: 50%; z-index: 1000; opacity: 0.3; }
+#debug-toggle { position: fixed; top: calc(var(--safe-top) + 20px); left: 20px; width: 24px; height: 24px; background: rgba(255,0,0,0.2); border-radius: 50%; z-index: 1000; opacity: 0.5; border: 1px solid var(--danger); display: flex; align-items: center; justify-content: center; font-size: 12px;}
 
-/* 🔥 Анимация уничтожения */
 #wipe-overlay {
   position: fixed; inset: 0; z-index: 9999; background: rgba(255, 0, 0, 0.9);
   display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -308,8 +307,7 @@ body.shake { animation: shakeBody 0.4s ease-in-out; }
 <!-- ЭКРАН 5: Инструкция -->
 <div id="screen-info" class="screen" style="overflow-y:auto; padding-top:60px;">
   <div class="title" style="font-size:24px; margin-bottom:20px;" data-i18n="info-title">📖 Инструкция</div>
-  <div style="font-size:14px; line-height:1.6; opacity:0.8; margin-bottom:16px;" data-i18n="info-text">
-  </div>
+  <div style="font-size:14px; line-height:1.6; opacity:0.8; margin-bottom:16px;" data-i18n="info-text"></div>
   <button class="big-btn" id="btn-info-back" style="margin-top:20px;" data-i18n="btn-back">← Назад</button>
 </div>
 
@@ -351,7 +349,6 @@ body.shake { animation: shakeBody 0.4s ease-in-out; }
   </div>
 </div>
 
-<!-- СТАТУС-БАР (Обновленный) -->
 <div class="status-bar">
   <span id="sb-enc">🔐 AES-256</span>
   <span id="sb-net">📡 ---</span>
@@ -365,9 +362,6 @@ body.shake { animation: shakeBody 0.4s ease-in-out; }
 <div id="debug-log"></div>
 
 <script>
-/* ============================================================
-   ПЕРЕВОДЫ (i18n)
-   ============================================================ */
 const translations = {
   ru: {
     subtitle: "P2P · E2E · БЕЗ СЕРВЕРОВ",
@@ -457,18 +451,13 @@ function setLang(lang) {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
   $('btn-' + lang).classList.add('active');
   
-  // Обновляем параноик-режим
   const ptxt = $('paranoid-text');
   ptxt.textContent = isParanoidMode ? translations[lang]['paranoid-on'] : translations[lang]['paranoid-off'];
   
-  // Обновляем кнопку Burn
   const btxt = $('btn-burn');
   btxt.innerHTML = `<span>${isParanoidMode ? translations[lang]['burn-on'] : translations[lang]['burn-off']}</span>`;
 }
 
-/* ============================================================
-   ОСТАЛЬНАЯ ЛОГИКА
-   ============================================================ */
 let tg = null;
 try {
   tg = window.Telegram?.WebApp;
@@ -529,7 +518,6 @@ function updateClock() {
 }
 requestAnimationFrame(updateClock);
 
-// Расширенный статус-бар
 let batteryLevel = '---';
 let networkType = '---';
 
@@ -545,7 +533,7 @@ function updateNetworkInfo() {
   if (conn) {
     networkType = conn.effectiveType ? conn.effectiveType.toUpperCase() : 'Wi-Fi';
   } else {
-    networkType = 'Wi-Fi'; // Фолбэк
+    networkType = 'Wi-Fi'; 
   }
   $('sb-net').textContent = '📡 ' + networkType;
 }
@@ -912,7 +900,6 @@ async function processDonation(amount) {
   } catch (e) {}
 })();
 
-// Автоопределение языка
 try {
   let lang = 'ru';
   if (window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code) {
