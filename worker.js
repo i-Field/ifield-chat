@@ -1,6 +1,6 @@
 // worker.js — ifield P2P Chat Backend
-const TTL = 300;         // 5 минут — жизнь комнаты в KV
-const MAX_SIZE = 8000;   // макс размер SDP
+const TTL = 300;         
+const MAX_SIZE = 8000;   
 
 export default {
   async fetch(request, env) {
@@ -14,14 +14,12 @@ export default {
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
 
-    // 🛡️ НЕВИДИМЫЙ ОХРАННИК
     const forbiddenPaths = ['/worker.js', '/wrangler.toml', '/.git', '/package.json', '/package-lock.json'];
     if (forbiddenPaths.includes(url.pathname) || url.pathname.startsWith('/.git/')) {
       return new Response('Not Found', { status: 404 });
     }
 
     try {
-      // 🤖 БЕЗОПАСНАЯ НАСТРОЙКА БОТА
       if (url.pathname === '/api/setup/webhook' && request.method === 'GET') {
         if (!env.BOT_TOKEN) return json({ error: 'BOT_TOKEN не задан в Cloudflare' }, 500, cors);
         const tgRes = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/setWebhook?url=${url.origin}/webhook`);
@@ -29,12 +27,10 @@ export default {
         return json(tgData, 200, cors);
       }
 
-      // 🤖 ВЕБХУК TELEGRAM
       if (url.pathname === '/webhook' && request.method === 'POST') {
         return handleTelegramWebhook(request, env);
       }
 
-      // 💎 API ДЛЯ ДОНАТОВ
       if (url.pathname === '/api/donate/link' && request.method === 'POST') {
         const body = await request.json();
         const amount = parseInt(body.amount, 10) || 50;
@@ -59,7 +55,6 @@ export default {
         return json({ error: data.description }, 500, cors);
       }
 
-      // 🔐 API ДЛЯ ЧАТА
       if (url.pathname.startsWith('/api/')) {
         if (url.pathname === '/api/room/new' && request.method === 'POST') {
           for (let i = 0; i < 5; i++) {
@@ -126,25 +121,34 @@ async function handleTelegramWebhook(request, env) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
 
-  // 🚀 ОТПРАВКА КАРТИНКИ С КНОПКОЙ ПРИ КОМАНДЕ /start
+  // 🚀 УМНАЯ ОТПРАВКА /start
   if (update.message && update.message.text && update.message.text.startsWith('/start')) {
     const chatId = update.message.chat.id;
-    
-    // ВАЖНО: Ссылка на твою картинку. 
-    // Если ты назвал файл start_v2.jpg и загрузил его в корень, ссылка будет такой:
-    const photoUrl = 'https://ifield-chat.qx420.workers.dev/start_v2.jpg'; 
     const appUrl = 'https://ifield-chat.qx420.workers.dev/'; 
     
-    await callTg('sendPhoto', {
+    // ⚠️ ВАЖНО: Убедись, что имя файла совпадает с тем, что ты загрузил в GitHub!
+    // Например, если ты загрузил start_v2.jpg, то ссылка должна быть на start_v2.jpg
+    const photoUrl = 'https://ifield-chat.qx420.workers.dev/start_v2.jpg'; 
+    
+    const caption = "🏴‍☠️ Приветствую, капитан!\n\nЭто iField — приватный P2P чат. Твои сообщения шифруются (AES-256) и идут напрямую, без серверов и логов.\n\nЖми кнопку ниже, чтобы войти в защищенный канал!";
+    const keyboard = { inline_keyboard: [[{ text: "🔐 Открыть приложение", web_app: { url: appUrl } }]] };
+
+    // Пытаемся отправить с фото
+    const photoRes = await callTg('sendPhoto', {
       chat_id: chatId,
       photo: photoUrl,
-      caption: "🏴‍☠️ Приветствую, капитан!\n\nЭто iField — приватный P2P чат. Твои сообщения шифруются (AES-256) и идут напрямую, без серверов и логов.\n\nЖми кнопку ниже, чтобы войти в защищенный канал!",
-      reply_markup: {
-        inline_keyboard: [[
-          { text: "🔐 Открыть приложение", web_app: { url: appUrl } }
-        ]]
-      }
+      caption: caption,
+      reply_markup: keyboard
     });
+
+    // Если фото не отправилось (например, файл не найден), отправляем обычный текст
+    if (!photoRes.ok) {
+      await callTg('sendMessage', {
+        chat_id: chatId,
+        text: caption,
+        reply_markup: keyboard
+      });
+    }
   }
 
   if (update.pre_checkout_query) {
