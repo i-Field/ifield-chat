@@ -126,13 +126,19 @@ async function handleTelegramWebhook(request, env) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
 
+  // 🚀 ОТПРАВКА КАРТИНКИ С КНОПКОЙ ПРИ КОМАНДЕ /start
   if (update.message && update.message.text && update.message.text.startsWith('/start')) {
     const chatId = update.message.chat.id;
+    
+    // ВАЖНО: Ссылка на твою картинку. 
+    // Если ты назвал файл start_v2.jpg и загрузил его в корень, ссылка будет такой:
+    const photoUrl = 'https://ifield-chat.qx420.workers.dev/start_v2.jpg'; 
     const appUrl = 'https://ifield-chat.qx420.workers.dev/'; 
     
-    await callTg('sendMessage', {
+    await callTg('sendPhoto', {
       chat_id: chatId,
-      text: "🏴‍☠️ Приветствую, капитан!\n\nЭто iField — приватный P2P чат. Твои сообщения шифруются (AES-256) и идут напрямую, без серверов и логов.\n\nЖми кнопку ниже, чтобы войти в защищенный канал!",
+      photo: photoUrl,
+      caption: "🏴‍☠️ Приветствую, капитан!\n\nЭто iField — приватный P2P чат. Твои сообщения шифруются (AES-256) и идут напрямую, без серверов и логов.\n\nЖми кнопку ниже, чтобы войти в защищенный канал!",
       reply_markup: {
         inline_keyboard: [[
           { text: "🔐 Открыть приложение", web_app: { url: appUrl } }
