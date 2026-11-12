@@ -121,14 +121,13 @@ async function handleTelegramWebhook(request, env) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
 
-  // 🚀 УМНАЯ ОТПРАВКА /start
+  // 🚀 УМНАЯ ОТПРАВКА /start С ТВОИМ ИМЕНЕМ КАРТИНКИ
   if (update.message && update.message.text && update.message.text.startsWith('/start')) {
     const chatId = update.message.chat.id;
     const appUrl = 'https://ifield-chat.qx420.workers.dev/'; 
     
-    // ⚠️ ВАЖНО: Убедись, что имя файла совпадает с тем, что ты загрузил в GitHub!
-    // Например, если ты загрузил start_v2.jpg, то ссылка должна быть на start_v2.jpg
-    const photoUrl = 'https://ifield-chat.qx420.workers.dev/start_v2.jpg'; 
+    // ⚠️ ТЕПЕРЬ ЗДЕСЬ ИМЯ ТВОЕГО ФАЙЛА ИЗ GITHUB:
+    const photoUrl = 'https://ifield-chat.qx420.workers.dev/IMG_6433.jpeg'; 
     
     const caption = "🏴‍☠️ Приветствую, капитан!\n\nЭто iField — приватный P2P чат. Твои сообщения шифруются (AES-256) и идут напрямую, без серверов и логов.\n\nЖми кнопку ниже, чтобы войти в защищенный канал!";
     const keyboard = { inline_keyboard: [[{ text: "🔐 Открыть приложение", web_app: { url: appUrl } }]] };
