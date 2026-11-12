@@ -14,18 +14,14 @@ export default {
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
 
-    // ========================================================
-    // 🛡️ НЕВИДИМЫЙ ОХРАННИК (Защита исходников)
-    // ========================================================
+    // 🛡️ НЕВИДИМЫЙ ОХРАННИК
     const forbiddenPaths = ['/worker.js', '/wrangler.toml', '/.git', '/package.json', '/package-lock.json'];
     if (forbiddenPaths.includes(url.pathname) || url.pathname.startsWith('/.git/')) {
       return new Response('Not Found', { status: 404 });
     }
 
     try {
-      // ========================================================
       // 🤖 БЕЗОПАСНАЯ НАСТРОЙКА БОТА
-      // ========================================================
       if (url.pathname === '/api/setup/webhook' && request.method === 'GET') {
         if (!env.BOT_TOKEN) return json({ error: 'BOT_TOKEN не задан в Cloudflare' }, 500, cors);
         const tgRes = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/setWebhook?url=${url.origin}/webhook`);
@@ -33,16 +29,12 @@ export default {
         return json(tgData, 200, cors);
       }
 
-      // ========================================================
       // 🤖 ВЕБХУК TELEGRAM
-      // ========================================================
       if (url.pathname === '/webhook' && request.method === 'POST') {
         return handleTelegramWebhook(request, env);
       }
 
-      // ========================================================
-      // 💎 API ДЛЯ ДОНАТОВ (Telegram Stars)
-      // ========================================================
+      // 💎 API ДЛЯ ДОНАТОВ
       if (url.pathname === '/api/donate/link' && request.method === 'POST') {
         const body = await request.json();
         const amount = parseInt(body.amount, 10) || 50;
@@ -67,9 +59,7 @@ export default {
         return json({ error: data.description }, 500, cors);
       }
 
-      // ========================================================
-      // 🔐 API ДЛЯ ЧАТА (СИГНАЛИНГ)
-      // ========================================================
+      // 🔐 API ДЛЯ ЧАТА
       if (url.pathname.startsWith('/api/')) {
         if (url.pathname === '/api/room/new' && request.method === 'POST') {
           for (let i = 0; i < 5; i++) {
@@ -108,9 +98,7 @@ export default {
         }
       }
 
-      // --- ВСЁ ОСТАЛЬНОЕ ОТДАЕМ КАК СТАТИКУ (index.html) ---
       return env.ASSETS.fetch(request);
-      
     } catch (e) {
       return json({ error: 'server_error' }, 500, cors);
     }
@@ -138,9 +126,9 @@ async function handleTelegramWebhook(request, env) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
 
-  if (update.message && update.message.text === '/start') {
+  if (update.message && update.message.text && update.message.text.startsWith('/start')) {
     const chatId = update.message.chat.id;
-    const appUrl = 'https://ifield-chat.qx420.workers.dev/'; // Твой домен
+    const appUrl = 'https://ifield-chat.qx420.workers.dev/'; 
     
     await callTg('sendMessage', {
       chat_id: chatId,
